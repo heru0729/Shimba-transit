@@ -14,14 +14,15 @@
   --primary:#e6001f;
   --primaryDark:#b3001a;
   --hoverBg:#fff1f2;
-  --hatsuno:#e4002b;
-  --morikyu:#f7931e;
-  --sakuragiLine:#e0b400;
+  --hatsuno:#E8B900;
+  --morikyu:#00A878;
+  --sakuragiLine:#EC6FA0;
   --takane:#0072bc;
   --tozan:#00a651;
-  --midoriyamaMain:#7cb342;
+  --midoriyamaMain:#96C93E;
   --ohirayama:#662d91;
   --midorihori:#ec008c;
+  --oshikusaMonorail:#00B7C7;
 }
 *{box-sizing:border-box;}
 body{
@@ -91,8 +92,17 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .suggestItem:last-child{border-bottom:none;}
 .suggestItem:hover, .suggestItem.active{background:var(--hoverBg);}
 .suggestItem .nm{font-size:14px;color:var(--text);}
+.suggestItem .codeHint{font-size:10px;color:var(--sub);font-weight:400;margin-left:4px;}
 .suggestItem .dots{display:flex;gap:3px;margin-left:auto;}
 .suggestItem .dots span{width:8px;height:8px;border-radius:2px;display:block;}
+.optionBlock{margin:10px 0;}
+.optionLabel{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px;display:block;}
+.radioRow{display:flex;gap:16px;font-size:13px;flex-wrap:wrap;}
+.radioRow label{display:flex;align-items:center;gap:5px;}
+#avoidLineSelect{
+  width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;
+  background:#fafafa;font-size:14px;color:var(--text);
+}
 .toggleRow{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:13px;}
 .toggleRow input{width:16px;height:16px;}
 #searchBtn{
@@ -121,6 +131,7 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .trackCol .track{width:4px;flex:1;min-height:28px;background:#ccc;border-radius:2px;}
 .rideInfo{flex:1;padding:2px 0 16px;}
 .rideInfo .stName{font-size:15px;font-weight:700;padding:2px 0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;}
+.rideInfo .codeBadge{font-size:11px;font-weight:700;color:var(--sub);background:#f0f1f3;border-radius:4px;padding:1px 6px;margin-left:4px;text-decoration:none;display:inline-block;}
 .rideInfo .lineTag{
   display:inline-flex;align-items:center;gap:6px;
   color:#fff;font-size:12px;font-weight:700;
@@ -134,8 +145,20 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .legendPanel{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
 .legendTitle{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:8px;}
 .legendGrid{display:flex;flex-wrap:wrap;gap:7px;}
-.legendItem{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);background:#f7f7f8;border:1px solid var(--border);border-radius:5px;padding:5px 9px;}
+.legendItem{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);background:#f7f7f8;border:1px solid var(--border);border-radius:5px;padding:5px 9px;cursor:pointer;}
+.legendItem:active{background:var(--hoverBg);}
 .legendItem .sw{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.fullListBtn{width:100%;margin-top:10px;padding:9px;background:#f7f7f8;border:1px solid var(--border);border-radius:6px;font-size:12.5px;font-weight:700;color:var(--text);cursor:pointer;}
+.lineStationRow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid #f0f0f0;cursor:pointer;}
+.lineStationRow:last-child{border-bottom:none;}
+.lineStationRow:hover{background:var(--hoverBg);}
+.lineStationCode{font-size:11px;font-weight:700;color:var(--sub);width:44px;flex-shrink:0;}
+.lineStationName{font-size:14px;color:var(--text);}
+.loopNote{font-size:12px;color:var(--sub);margin-top:6px;text-align:center;}
+.lineMeta{display:flex;flex-wrap:wrap;gap:10px;font-size:12px;color:var(--sub);margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--border);}
+.sortToggleRow{display:flex;gap:8px;margin-bottom:12px;}
+.sortBtn{flex:1;padding:8px;border:1px solid var(--border);background:#f7f7f8;border-radius:6px;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;}
+.sortBtn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
 .modalBackdrop{
   position:fixed;inset:0;background:rgba(0,0,0,0.45);
   display:flex;align-items:center;justify-content:center;
@@ -154,14 +177,14 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 <header>
   <div class="titleRow">
     <h1>新巴国 乗換案内</h1>
-    <span class="en">Shimba Server</span>
+    <span class="en" id="headerEn">Shimba Server</span>
   </div>
 </header>
 <main>
   <div class="searchCard">
     <div class="inputGroup" id="fromGroup">
       <label>出発駅</label>
-      <input type="text" id="fromInput" placeholder="駅名を入力" autocomplete="off">
+      <input type="text" id="fromInput" placeholder="駅名 または 駅番号(H03など)" autocomplete="off">
       <div class="suggestBox" id="fromSuggest"></div>
     </div>
     <div class="swapWrap">
@@ -169,8 +192,24 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
     </div>
     <div class="inputGroup" id="toGroup">
       <label>到着駅</label>
-      <input type="text" id="toInput" placeholder="駅名を入力" autocomplete="off">
+      <input type="text" id="toInput" placeholder="駅名 または 駅番号(H03など)" autocomplete="off">
       <div class="suggestBox" id="toSuggest"></div>
+    </div>
+    <div class="inputGroup" id="viaGroup">
+      <label>経由駅（任意）</label>
+      <input type="text" id="viaInput" placeholder="指定しない場合は空欄" autocomplete="off">
+      <div class="suggestBox" id="viaSuggest"></div>
+    </div>
+    <div class="optionBlock">
+      <div class="optionLabel">検索モード</div>
+      <div class="radioRow">
+        <label><input type="radio" name="searchMode" value="transfer" checked> 乗り換え優先</label>
+        <label><input type="radio" name="searchMode" value="distance"> 距離優先</label>
+      </div>
+    </div>
+    <div class="optionBlock">
+      <label class="optionLabel" for="avoidLineSelect">避ける路線</label>
+      <select id="avoidLineSelect"></select>
     </div>
     <div class="toggleRow">
       <input type="checkbox" id="expressOnlyToggle">
@@ -179,11 +218,14 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
     <button id="searchBtn" type="button">この条件で検索</button>
   </div>
 
+  <div class="legendPanel" id="historyPanel"></div>
+
   <div id="result"></div>
 
   <div class="legendPanel">
-    <div class="legendTitle">路線カラー</div>
+    <div class="legendTitle">路線一覧</div>
     <div class="legendGrid" id="legend"></div>
+    <button class="fullListBtn" type="button" onclick="showStationList('kana')">全駅一覧を見る</button>
   </div>
 </main>
 
@@ -212,7 +254,7 @@ const LINES = [
     {code:'S05', name:'桜木'},
     {code:'S06', name:'桜木山麓'}
   ]},
-  { id:'takane', name:'レモンメトロ高嶺線', loop:true, rapid:['T01','T02','T03','T06','T09'], stations:[
+  { id:'takane', name:'レモンメトロ高嶺線', loop:true, loopForward:'内回り', rapid:['T01','T02','T03','T06','T09'], stations:[
     {code:'T01', name:'大岡'},
     {code:'T02', name:'初野'},
     {code:'T03', name:'桜木'},
@@ -253,13 +295,27 @@ const LINES = [
     {code:'R04', name:'孤城山麓'},
     {code:'R05', name:'両江'},
     {code:'R06', name:'堀岩'}
+  ]},
+  { id:'oshikusaMonorail', name:'押草モノレール', loop:true, loopForward:'外回り', stations:[
+    {code:'O-01', name:'高嶺'},
+    {code:'O-02', name:'高嶺港'},
+    {code:'O-03', name:'押草'},
+    {code:'O-04', name:'高嶺山麓'},
+    {code:'O-05', name:'南高嶺'},
+    {code:'O-06', name:'高丘公園前'}
   ]}
 ];
 
 const EXTRA_TRANSFERS = [
-  {nameA:'桜木', nameB:'桜木山麓'},
-  {nameA:'白々峰海岸', nameB:'白々峰高原'}
+  {nameA:'桜木', nameB:'桜木山麓', minutes:2},
+  {nameA:'白々峰海岸', nameB:'白々峰高原', minutes:2},
+  {nameA:'高嶺', nameB:'高嶺中央', minutes:1},
+  {nameA:'南高嶺', nameB:'緑電高嶺', minutes:2}
 ];
+function getWalkMinutes(nameA, nameB){
+  const et = EXTRA_TRANSFERS.find(e=>(e.nameA===nameA && e.nameB===nameB) || (e.nameA===nameB && e.nameB===nameA));
+  return et ? et.minutes : 2;
+}
 
 function buildGraph(){
   const nodes = {};
@@ -313,9 +369,10 @@ function buildStationIndex(){
   LINES.forEach(line=>{
     line.stations.forEach(st=>{
       if(!map[st.name]){
-        map[st.name] = {name:st.name, display:st.display||st.name, lines:[]};
+        map[st.name] = {name:st.name, display:st.display||st.name, lines:[], codes:[]};
       }
       map[st.name].lines.push(line.id);
+      if(st.code) map[st.name].codes.push(st.code);
     });
   });
   return Object.values(map);
@@ -364,13 +421,21 @@ function arraysEqual(a,b){
   for(let i=0;i<a.length;i++){ if(a[i]!==b[i]) return false; }
   return true;
 }
-function edgeWeight(e){
-  if(e.type==='ride') return e.cost;
-  if(e.type==='transfer' || e.type==='walk') return 1000;
+function edgeWeight(e, mode){
+  const distMode = mode==='distance';
+  if(e.type==='ride') return distMode ? e.cost*1000 : e.cost;
+  if(e.type==='transfer' || e.type==='walk') return distMode ? 1 : 1000;
   return 0;
 }
+function sumEdges(edges, mode){
+  return edges.reduce((s,e)=>s+edgeWeight(e,mode),0);
+}
+function decodeCost(cost, mode){
+  if(mode==='distance') return {stops:Math.floor(cost/1000), transfers:cost%1000};
+  return {transfers:Math.floor(cost/1000), stops:cost%1000};
+}
 
-function dijkstraScalar(adj, nodeIds, start, target){
+function dijkstraScalar(adj, nodeIds, start, target, mode){
   const dist={}, prev={}, visited={};
   nodeIds.forEach(id=>{ dist[id]=Infinity; });
   dist[start]=0;
@@ -383,23 +448,29 @@ function dijkstraScalar(adj, nodeIds, start, target){
     if(u===target) break;
     visited[u]=true;
     (adj[u]||[]).forEach(e=>{
-      const w = edgeWeight(e);
+      const w = edgeWeight(e, mode);
       const nd = dist[u]+w;
-      if(nd<dist[e.to]){ dist[e.to]=nd; prev[e.to]={from:u,type:e.type}; }
+      if(nd<dist[e.to]){ dist[e.to]=nd; prev[e.to]={from:u,type:e.type,cost:e.cost}; }
     });
   }
   if(dist[target]===Infinity) return null;
   const path=[]; let cur=target;
   while(cur){ path.unshift(cur); cur = prev[cur] ? prev[cur].from : null; }
   const edgesUsed=[];
-  for(let i=1;i<path.length;i++){ edgesUsed.push({from:path[i-1], to:path[i], type:prev[path[i]].type}); }
+  for(let i=1;i<path.length;i++){ edgesUsed.push({from:path[i-1], to:path[i], type:prev[path[i]].type, cost:prev[path[i]].cost}); }
   return {path, edgesUsed, cost:dist[target]};
 }
 
-function buildQueryGraph(startName, endName){
+function buildQueryGraph(startName, endName, avoidLineId){
   const adj = cloneAdj(GRAPH.adj);
+  if(avoidLineId){
+    Object.values(GRAPH.nodes).forEach(nd=>{
+      if(nd.lineId===avoidLineId){ removeNode(adj, nd.id); }
+    });
+  }
   adj['__start__']=[]; adj['__end__']=[];
   Object.values(GRAPH.nodes).forEach(nd=>{
+    if(avoidLineId && nd.lineId===avoidLineId) return;
     if(nd.name===startName){
       adj['__start__'].push({to:nd.id,type:'virtual',cost:0});
       adj[nd.id].push({to:'__start__',type:'virtual',cost:0});
@@ -412,10 +483,10 @@ function buildQueryGraph(startName, endName){
   return adj;
 }
 
-function yenKShortest(startName, endName, K){
-  const baseAdj = buildQueryGraph(startName, endName);
+function yenKShortest(startName, endName, K, mode, avoidLineId){
+  const baseAdj = buildQueryGraph(startName, endName, avoidLineId);
   const nodeIds = Object.keys(baseAdj);
-  const first = dijkstraScalar(baseAdj, nodeIds, '__start__', '__end__');
+  const first = dijkstraScalar(baseAdj, nodeIds, '__start__', '__end__', mode);
   if(!first) return [];
   const A = [first];
   const B = [];
@@ -431,10 +502,10 @@ function yenKShortest(startName, endName, K){
         }
       });
       rootPath.slice(0,-1).forEach(nid=>{ removeNode(adjCopy, nid); });
-      const spurRes = dijkstraScalar(adjCopy, Object.keys(adjCopy), spurNode, '__end__');
+      const spurRes = dijkstraScalar(adjCopy, Object.keys(adjCopy), spurNode, '__end__', mode);
       if(spurRes){
         const totalPath = rootPath.slice(0,-1).concat(spurRes.path);
-        const rootCost = A[k-1].cumCost ? A[k-1].cumCost[i] : sumEdges(A[k-1].edgesUsed.slice(0,i));
+        const rootCost = sumEdges(A[k-1].edgesUsed.slice(0,i), mode);
         const totalCost = rootCost + spurRes.cost;
         const already = A.some(p=>arraysEqual(p.path,totalPath)) || B.some(p=>arraysEqual(p.path,totalPath));
         if(!already){
@@ -447,15 +518,7 @@ function yenKShortest(startName, endName, K){
     B.sort((a,b)=>a.cost-b.cost);
     A.push(B.shift());
   }
-  A.forEach(p=>{
-    const cum=[0];
-    p.edgesUsed.forEach(e=>{ cum.push(cum[cum.length-1]+edgeWeight(e)); });
-    p.cumCost = cum;
-  });
   return A;
-}
-function sumEdges(edges){
-  return edges.reduce((s,e)=>s+edgeWeight(e),0);
 }
 
 function buildItinerary(nodes, path, edgesUsed){
@@ -505,89 +568,218 @@ function matchesExpressFilter(legs){
   });
 }
 
-function renderCandidates(list){
-  const resultEl = document.getElementById('result');
-  let html = '';
-  list.forEach((cand,idx)=>{
-    const transfers = Math.floor(cand.cost/1000);
-    const stops = cand.cost%1000;
-    html += '<div class="resultCard">';
-    html += '<div class="candidateLabel">経路'+(idx+1)+(idx===0?'（おすすめ）':'')+'</div>';
-    html += '<div class="summaryBar">';
-    html += '<div class="box"><div class="num">'+stops+'</div><div class="lbl">乗車区間数</div></div>';
-    html += '<div class="box"><div class="num">'+transfers+'</div><div class="lbl">乗り換え回数</div></div>';
-    html += '</div>';
-    cand.legs.forEach(leg=>{
-      if(leg.ride){
-        if(leg.stations.length<2) return;
-        const ld = lineDef(leg.lineId);
-        const from = leg.stations[0];
-        const to = leg.stations[leg.stations.length-1];
-        const stopCount = leg.stations.length-1;
-        let note='';
-        if(ld.rapid && from.code && to.code && ld.rapid.includes(from.code) && ld.rapid.includes(to.code)) note='快速利用可';
-        if(ld.express && from.code && to.code && ld.express.includes(from.code) && ld.express.includes(to.code)) note='急行利用可';
-        let dirNote='';
-        if(ld.loop){
-          const n = ld.stations.length;
-          const diff = ((leg.stations[1].idx - leg.stations[0].idx) + n) % n;
-          dirNote = diff===1 ? '内回り' : '外回り';
-        }
-        html += '<div class="rideBlock">';
-        html += '<div class="trackCol"><span class="dot" style="border-color:var(--'+leg.lineId+')"></span><span class="track" style="background:var(--'+leg.lineId+')"></span><span class="dot" style="border-color:var(--'+leg.lineId+')"></span></div>';
-        html += '<div class="rideInfo">';
-        html += '<div class="stName" onclick="showStationInfo(\''+from.name+'\')">'+from.display+'</div>';
-        html += '<div class="lineTag" style="background:var(--'+leg.lineId+')">'+ld.name+(dirNote?'（'+dirNote+'）':'')+'　'+stopCount+'駅'+(note?'　'+note:'')+'</div>';
-        html += '<div class="stName" onclick="showStationInfo(\''+to.name+'\')">'+to.display+'</div>';
-        html += '</div></div>';
-      } else {
-        let ico='⇄', text='';
-        if(leg.type==='through'){ ico='➡'; text=leg.from.display+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'; }
-        else if(leg.type==='walk'){ ico='🚶'; text=leg.from.display+' → '+leg.to.display+'　徒歩2分乗り換え'; }
-        else { ico='⇄'; text=leg.from.display+'駅で'+leg.to.lineName+'に乗り換え'; }
-        html += '<div class="transferRow"><div class="icoCol"><div class="ico">'+ico+'</div></div><div class="txt">'+text+'</div></div>';
-      }
-    });
-    html += '</div>';
+function doDirectSearch(fromName, toName, mode, avoidLineId, K){
+  const raw = yenKShortest(fromName, toName, K||12, mode, avoidLineId);
+  return raw.map(r=>{
+    const legs = pathToItinerary(r.path, r.edgesUsed);
+    return {legs, cost:r.cost, sig:itinerarySignature(legs)};
   });
-  resultEl.innerHTML = html;
+}
+
+function doViaSearch(fromName, viaName, toName, mode, avoidLineId){
+  const seg1raw = yenKShortest(fromName, viaName, 6, mode, avoidLineId);
+  const seg2raw = yenKShortest(viaName, toName, 6, mode, avoidLineId);
+  if(seg1raw.length===0 || seg2raw.length===0) return [];
+  const combos = [];
+  seg1raw.forEach(s1=>{
+    seg2raw.forEach(s2=>{
+      const legs1 = pathToItinerary(s1.path, s1.edgesUsed);
+      const legs2 = pathToItinerary(s2.path, s2.edgesUsed);
+      const lastLeg1 = legs1[legs1.length-1];
+      const firstLeg2 = legs2[0];
+      const lastNode = lastLeg1.stations[lastLeg1.stations.length-1];
+      const firstNode = firstLeg2.stations[0];
+      const viaMarker = {transfer:true, type:'via', from:lastNode, to:firstNode};
+      const combinedLegs = legs1.concat([viaMarker], legs2);
+      combos.push({legs:combinedLegs, cost:s1.cost+s2.cost, sig:itinerarySignature(combinedLegs)});
+    });
+  });
+  return combos;
+}
+
+function renderOneCandidateHtml(labelText, legs, transfers, stops){
+  let html = '<div class="resultCard">';
+  html += '<div class="candidateLabel">'+labelText+'</div>';
+  html += '<div class="summaryBar">';
+  html += '<div class="box"><div class="num">'+stops+'</div><div class="lbl">乗車区間数</div></div>';
+  html += '<div class="box"><div class="num">'+transfers+'</div><div class="lbl">乗り換え回数</div></div>';
+  html += '</div>';
+  legs.forEach(leg=>{
+    if(leg.ride){
+      if(leg.stations.length<2) return;
+      const ld = lineDef(leg.lineId);
+      const from = leg.stations[0];
+      const to = leg.stations[leg.stations.length-1];
+      const stopCount = leg.stations.length-1;
+      let note='';
+      if(ld.rapid && from.code && to.code && ld.rapid.includes(from.code) && ld.rapid.includes(to.code)) note='快速利用可';
+      if(ld.express && from.code && to.code && ld.express.includes(from.code) && ld.express.includes(to.code)) note='急行利用可';
+      let dirNote='';
+      if(ld.loop){
+        const n = ld.stations.length;
+        const diff = ((leg.stations[1].idx - leg.stations[0].idx) + n) % n;
+        const forwardLabel = ld.loopForward || '内回り';
+        const backwardLabel = forwardLabel==='内回り' ? '外回り' : '内回り';
+        dirNote = diff===1 ? forwardLabel : backwardLabel;
+      }
+      html += '<div class="rideBlock">';
+      html += '<div class="trackCol"><span class="dot" style="border-color:var(--'+leg.lineId+')"></span><span class="track" style="background:var(--'+leg.lineId+')"></span><span class="dot" style="border-color:var(--'+leg.lineId+')"></span></div>';
+      html += '<div class="rideInfo">';
+      html += '<div class="stName" onclick="showStationInfo(\''+from.name+'\')">'+from.display+(from.code?' <span class="codeBadge">'+from.code+'</span>':'')+'</div>';
+      html += '<div class="lineTag" style="background:var(--'+leg.lineId+')">'+ld.name+(dirNote?'（'+dirNote+'）':'')+'　'+stopCount+'駅'+(note?'　'+note:'')+'</div>';
+      html += '<div class="stName" onclick="showStationInfo(\''+to.name+'\')">'+to.display+(to.code?' <span class="codeBadge">'+to.code+'</span>':'')+'</div>';
+      html += '</div></div>';
+    } else {
+      let ico='⇄', text='';
+      if(leg.type==='through'){ ico='➡'; text=leg.from.display+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'; }
+      else if(leg.type==='walk'){ ico='🚶'; text=leg.from.display+' → '+leg.to.display+'　徒歩'+getWalkMinutes(leg.from.name,leg.to.name)+'分乗り換え'; }
+      else if(leg.type==='via'){ ico='📍'; text='経由：'+leg.from.display+'駅を通過'; }
+      else { ico='⇄'; text=leg.from.display+'駅で'+leg.to.lineName+'に乗り換え'; }
+      html += '<div class="transferRow"><div class="icoCol"><div class="ico">'+ico+'</div></div><div class="txt">'+text+'</div></div>';
+    }
+  });
+  html += '</div>';
+  return html;
+}
+
+function renderCandidates(list, mode){
+  const resultEl = document.getElementById('result');
+  resultEl.innerHTML = list.map((cand,idx)=>{
+    const dc = decodeCost(cand.cost, mode);
+    return renderOneCandidateHtml('経路'+(idx+1)+(idx===0?'（おすすめ）':''), cand.legs, dc.transfers, dc.stops);
+  }).join('');
+}
+
+let hiddenMode = false;
+
+function buildMashupName(a,b){
+  const ca = Math.ceil(a.length/2);
+  const cb = Math.floor(b.length/2);
+  return a.slice(0,ca) + (cb>0 ? b.slice(b.length-cb) : '');
+}
+
+function renderFakeRoute(fromText, toText){
+  const cleanA = fromText.replace(/駅$/,'') || fromText;
+  const cleanB = toText.replace(/駅$/,'') || toText;
+  const mashup = buildMashupName(cleanA, cleanB);
+  const stops1 = Math.max(1, cleanA.length);
+  const stops2 = Math.max(1, cleanB.length);
+  const transfers = 1;
+  let html = '<div class="resultCard">';
+  html += '<div class="candidateLabel">🎮 隠しモード経路（架空の駅です）</div>';
+  html += '<div class="summaryBar"><div class="box"><div class="num">'+(stops1+stops2)+'</div><div class="lbl">乗車区間数</div></div><div class="box"><div class="num">'+transfers+'</div><div class="lbl">乗り換え回数</div></div></div>';
+  html += '<div class="rideBlock"><div class="trackCol"><span class="dot" style="border-color:#9b59b6"></span><span class="track" style="background:#9b59b6"></span><span class="dot" style="border-color:#9b59b6"></span></div><div class="rideInfo">';
+  html += '<div class="stName">'+cleanA+'駅</div>';
+  html += '<div class="lineTag" style="background:#9b59b6">幻の隠し線　'+stops1+'駅</div>';
+  html += '<div class="stName">'+mashup+'駅</div>';
+  html += '</div></div>';
+  html += '<div class="transferRow"><div class="icoCol"><div class="ico">⇄</div></div><div class="txt">'+mashup+'駅で乗り換え</div></div>';
+  html += '<div class="rideBlock"><div class="trackCol"><span class="dot" style="border-color:#9b59b6"></span><span class="track" style="background:#9b59b6"></span><span class="dot" style="border-color:#9b59b6"></span></div><div class="rideInfo">';
+  html += '<div class="stName">'+mashup+'駅</div>';
+  html += '<div class="lineTag" style="background:#9b59b6">幻の隠し線　'+stops2+'駅</div>';
+  html += '<div class="stName">'+cleanB+'駅</div>';
+  html += '</div></div>';
+  html += '</div>';
+  document.getElementById('result').innerHTML = html;
+}
+
+function loadHistory(){
+  try{ return JSON.parse(localStorage.getItem('shimbaNorikaeHistory')||'[]'); }catch(e){ return []; }
+}
+function saveHistoryList(list){
+  try{ localStorage.setItem('shimbaNorikaeHistory', JSON.stringify(list)); }catch(e){}
+}
+function addHistory(fromName, toName){
+  let hist = loadHistory();
+  hist = hist.filter(h=>!(h.from===fromName && h.to===toName));
+  hist.unshift({from:fromName, to:toName});
+  hist = hist.slice(0,8);
+  saveHistoryList(hist);
+  renderHistory();
+}
+function renderHistory(){
+  const hist = loadHistory();
+  const panel = document.getElementById('historyPanel');
+  if(!panel) return;
+  if(hist.length===0){ panel.innerHTML=''; return; }
+  const chips = hist.map(h=>{
+    const fs = STATIONS.find(s=>s.name===h.from);
+    const ts = STATIONS.find(s=>s.name===h.to);
+    const fd = fs?fs.display:h.from;
+    const td = ts?ts.display:h.to;
+    return '<div class="legendItem" onclick="rerunHistory(\''+h.from+'\',\''+h.to+'\')">'+fd+' → '+td+'</div>';
+  }).join('');
+  panel.innerHTML = '<div class="legendTitle">検索履歴</div><div class="legendGrid">'+chips+'</div>';
+}
+function rerunHistory(fromName, toName){
+  const fromInput = document.getElementById('fromInput');
+  const toInput = document.getElementById('toInput');
+  const viaInput = document.getElementById('viaInput');
+  const fs = STATIONS.find(s=>s.name===fromName), ts = STATIONS.find(s=>s.name===toName);
+  fromInput.value = fs?fs.display:fromName; fromInput.dataset.value = fromName;
+  toInput.value = ts?ts.display:toName; toInput.dataset.value = toName;
+  viaInput.value=''; viaInput.dataset.value='';
+  doSearch();
 }
 
 function doSearch(){
   const fromInput = document.getElementById('fromInput');
   const toInput = document.getElementById('toInput');
+  const viaInput = document.getElementById('viaInput');
+  const fromRaw = fromInput.value.trim();
+  const toRaw = toInput.value.trim();
+  const viaRaw = viaInput.value.trim();
   const fromName = resolveStation(fromInput);
   const toName = resolveStation(toInput);
   const resultEl = document.getElementById('result');
+
+  if(!fromRaw || !toRaw){
+    resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅・到着駅を入力してください。</div></div>';
+    return;
+  }
+  if(hiddenMode && (!fromName || !toName)){
+    renderFakeRoute(fromRaw, toRaw);
+    return;
+  }
   if(!fromName || !toName){
     resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅・到着駅を候補から選択してください。</div></div>';
     return;
   }
-  if(fromName===toName){
+  if(fromName===toName && !viaRaw){
     resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅と到着駅が同じです。</div></div>';
     return;
   }
-  const raw = yenKShortest(fromName, toName, 12);
-  if(raw.length===0){
-    resultEl.innerHTML = '<div class="resultCard"><div class="msg">経路が見つかりませんでした。</div></div>';
-    return;
-  }
-  let candidates = raw.map(r=>{
-    const legs = pathToItinerary(r.path, r.edgesUsed);
-    return {legs, cost:r.cost, sig:itinerarySignature(legs)};
-  });
+
+  const mode = document.querySelector('input[name="searchMode"]:checked').value;
+  const avoidLineId = document.getElementById('avoidLineSelect').value || null;
   const expressOnly = document.getElementById('expressOnlyToggle').checked;
-  if(expressOnly){
-    candidates = candidates.filter(c=>matchesExpressFilter(c.legs));
+
+  let candidates;
+  if(viaRaw){
+    const viaName = resolveStation(viaInput);
+    if(!viaName){
+      resultEl.innerHTML = '<div class="resultCard"><div class="msg">経由駅を候補から選択してください。</div></div>';
+      return;
+    }
+    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineId);
+  } else {
+    candidates = doDirectSearch(fromName, toName, mode, avoidLineId, 12);
   }
+
+  candidates.sort((a,b)=>a.cost-b.cost);
+  if(expressOnly){ candidates = candidates.filter(c=>matchesExpressFilter(c.legs)); }
   const seen = new Set(); const unique=[];
   candidates.forEach(c=>{ if(!seen.has(c.sig)){ seen.add(c.sig); unique.push(c); } });
   const top = unique.slice(0,3);
   if(top.length===0){
-    resultEl.innerHTML = '<div class="resultCard"><div class="msg">'+(expressOnly?'快速・急行のみでは経路が見つかりませんでした。':'経路が見つかりませんでした。')+'</div></div>';
+    let msg = '経路が見つかりませんでした。';
+    if(avoidLineId) msg = '指定した路線を避けると経路が見つかりませんでした。';
+    if(expressOnly) msg = '快速・急行のみでは経路が見つかりませんでした。';
+    resultEl.innerHTML = '<div class="resultCard"><div class="msg">'+msg+'</div></div>';
     return;
   }
-  renderCandidates(top);
+  addHistory(fromName, toName);
+  renderCandidates(top, mode);
 }
 
 function renderLegend(){
@@ -596,23 +788,32 @@ function renderLegend(){
     const item = document.createElement('div');
     item.className = 'legendItem';
     item.innerHTML = '<div class="sw" style="background:var(--'+line.id+')"></div>'+line.name;
+    item.addEventListener('click', ()=>{ showLineInfo(line.id); });
     el.appendChild(item);
   });
 }
 renderLegend();
+
+function populateAvoidLineSelect(){
+  const sel = document.getElementById('avoidLineSelect');
+  sel.innerHTML = '<option value="">指定しない</option>' + LINES.map(l=>'<option value="'+l.id+'">'+l.name+'</option>').join('');
+}
+populateAvoidLineSelect();
 
 function setupAutocomplete(inputId, boxId){
   const input = document.getElementById(inputId);
   const box = document.getElementById(boxId);
   function filterStations(q){
     if(!q) return [];
-    return STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q)).slice(0,10);
+    const qu = q.toUpperCase();
+    return STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q) || s.codes.some(c=>c.toUpperCase().includes(qu))).slice(0,10);
   }
   function renderBox(list){
     if(list.length===0){ box.classList.remove('show'); box.innerHTML=''; return; }
     box.innerHTML = list.map(s=>{
       const dots = s.lines.map(lid=>'<span style="background:var(--'+lid+')"></span>').join('');
-      return '<div class="suggestItem" data-name="'+s.name+'" data-display="'+s.display+'"><span class="nm">'+s.display+'</span><span class="dots">'+dots+'</span></div>';
+      const codeHint = s.codes.length ? '<span class="codeHint">'+s.codes.join('/')+'</span>' : '';
+      return '<div class="suggestItem" data-name="'+s.name+'" data-display="'+s.display+'"><span class="nm">'+s.display+codeHint+'</span><span class="dots">'+dots+'</span></div>';
     }).join('');
     box.classList.add('show');
   }
@@ -648,6 +849,8 @@ function resolveStation(input){
   }
   const exact = STATIONS.find(s=>s.display===val || s.name===val);
   if(exact) return exact.name;
+  const byCode = STATIONS.find(s=>s.codes.some(c=>c.toUpperCase()===val.toUpperCase()));
+  if(byCode) return byCode.name;
   const partial = STATIONS.filter(s=>s.display.includes(val) || s.name.includes(val));
   if(partial.length>0) return partial[0].name;
   return null;
@@ -655,6 +858,7 @@ function resolveStation(input){
 
 setupAutocomplete('fromInput','fromSuggest');
 setupAutocomplete('toInput','toSuggest');
+setupAutocomplete('viaInput','viaSuggest');
 
 document.getElementById('swapBtn').addEventListener('click', ()=>{
   const fromInput = document.getElementById('fromInput');
@@ -664,6 +868,8 @@ document.getElementById('swapBtn').addEventListener('click', ()=>{
   toInput.value = tv; toInput.dataset.value = td;
 });
 document.getElementById('searchBtn').addEventListener('click', doSearch);
+
+renderHistory();
 
 function showStationInfo(name){
   const info = STATION_INFO[name];
@@ -678,6 +884,128 @@ function showStationInfo(name){
   document.getElementById('modalRoot').innerHTML = html;
 }
 function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+
+function showLineInfo(lineId){
+  const line = lineDef(lineId);
+  let html = '<div class="modalBackdrop" id="modalBackdrop" onclick="if(event.target.id===\'modalBackdrop\')closeModal()"><div class="modalPanel">';
+  html += '<div class="modalHead"><div class="modalTitle">'+line.name+'</div><button class="modalClose" onclick="closeModal()">×</button></div>';
+  html += '<div class="lineMeta"><span>駅数：'+line.stations.length+'駅</span>';
+  if(line.loop){
+    html += '<span>環状線</span>';
+  } else {
+    const first = line.stations[0], last = line.stations[line.stations.length-1];
+    html += '<span>始発：'+(first.display||first.name)+'</span><span>終着：'+(last.display||last.name)+'</span>';
+  }
+  html += '</div>';
+  line.stations.forEach(st=>{
+    const display = st.display||st.name;
+    html += '<div class="lineStationRow" onclick="showStationInfo(\''+st.name+'\')"><span class="lineStationCode">'+(st.code||'')+'</span><span class="lineStationName">'+display+'</span></div>';
+  });
+  if(line.loop){
+    const first = line.stations[0];
+    html += '<div class="loopNote">※環状線のため '+(first.display||first.name)+' に戻ります</div>';
+  }
+  html += '</div></div>';
+  document.getElementById('modalRoot').innerHTML = html;
+}
+
+function showStationList(sortMode){
+  let list = STATIONS.slice();
+  if(sortMode==='code'){
+    list.sort((a,b)=>{
+      const ca = a.codes.length ? a.codes.slice().sort()[0] : 'zzz';
+      const cb = b.codes.length ? b.codes.slice().sort()[0] : 'zzz';
+      return ca.localeCompare(cb);
+    });
+  } else {
+    list.sort((a,b)=>a.display.localeCompare(b.display,'ja'));
+  }
+  let html = '<div class="modalBackdrop" id="modalBackdrop" onclick="if(event.target.id===\'modalBackdrop\')closeModal()"><div class="modalPanel">';
+  html += '<div class="modalHead"><div class="modalTitle">全駅一覧（全'+list.length+'駅）</div><button class="modalClose" onclick="closeModal()">×</button></div>';
+  html += '<div class="sortToggleRow">';
+  html += '<button class="sortBtn'+(sortMode!=='code'?' active':'')+'" onclick="showStationList(\'kana\')">五十音順</button>';
+  html += '<button class="sortBtn'+(sortMode==='code'?' active':'')+'" onclick="showStationList(\'code\')">駅番号順</button>';
+  html += '</div>';
+  list.forEach(s=>{
+    const codeText = s.codes.length ? s.codes.join(' / ') : '－';
+    html += '<div class="lineStationRow" onclick="showStationInfo(\''+s.name+'\')"><span class="lineStationCode">'+codeText+'</span><span class="lineStationName">'+s.display+'</span></div>';
+  });
+  html += '</div></div>';
+  document.getElementById('modalRoot').innerHTML = html;
+}
+
+function computeExtremeRoutes(){
+  let bestStopsRec=null, bestTransfersRec=null, bestBothRec=null;
+  const nodeIds = Object.keys(GRAPH.nodes);
+  function consider(path, edgesUsed, stops, transfers){
+    if(path.length<2) return;
+    if(!bestStopsRec || stops>bestStopsRec.stops || (stops===bestStopsRec.stops && transfers>bestStopsRec.transfers)){
+      bestStopsRec = {stops, transfers, path:path.slice(), edgesUsed:edgesUsed.slice()};
+    }
+    if(!bestTransfersRec || transfers>bestTransfersRec.transfers || (transfers===bestTransfersRec.transfers && stops>bestTransfersRec.stops)){
+      bestTransfersRec = {stops, transfers, path:path.slice(), edgesUsed:edgesUsed.slice()};
+    }
+    const currentScore = stops+transfers;
+    const bestScore = bestBothRec ? (bestBothRec.stops+bestBothRec.transfers) : -1;
+    if(currentScore>bestScore){
+      bestBothRec = {stops, transfers, path:path.slice(), edgesUsed:edgesUsed.slice()};
+    }
+  }
+  function dfs(current, visited, path, edgesUsed, stops, transfers){
+    consider(path, edgesUsed, stops, transfers);
+    GRAPH.adj[current].forEach(e=>{
+      if(visited.has(e.to)) return;
+      visited.add(e.to);
+      path.push(e.to);
+      edgesUsed.push({from:current, to:e.to, type:e.type, cost:e.cost});
+      const addT = (e.type==='transfer'||e.type==='walk') ? 1 : 0;
+      const addS = e.type==='ride' ? e.cost : 0;
+      dfs(e.to, visited, path, edgesUsed, stops+addS, transfers+addT);
+      path.pop(); edgesUsed.pop(); visited.delete(e.to);
+    });
+  }
+  nodeIds.forEach(startId=>{ dfs(startId, new Set([startId]), [startId], [], 0, 0); });
+  function toResult(rec){
+    return {legs:buildItinerary(GRAPH.nodes, rec.path, rec.edgesUsed), stops:rec.stops, transfers:rec.transfers};
+  }
+  return {mostStops:toResult(bestStopsRec), mostTransfers:toResult(bestTransfersRec), mostBoth:toResult(bestBothRec)};
+}
+let extremeRoutesCache = null;
+function getExtremeRoutes(){
+  if(!extremeRoutesCache){ extremeRoutesCache = computeExtremeRoutes(); }
+  return extremeRoutesCache;
+}
+
+function runKonami(){
+  hiddenMode = true;
+  const headerEn = document.getElementById('headerEn');
+  if(headerEn && !headerEn.textContent.includes('🎮')) headerEn.textContent += ' 🎮';
+  const resultEl = document.getElementById('result');
+  resultEl.innerHTML = '<div class="resultCard"><div class="msg">🎮 隠しコマンド発動！記録を集計中…</div></div>';
+  setTimeout(()=>{
+    const rec = getExtremeRoutes();
+    let html = '<div class="resultCard"><div class="candidateLabel">🎮 隠しコマンド発動！全ネットワーク記録</div></div>';
+    html += renderOneCandidateHtml('乗車区間最多ルート（'+rec.mostStops.stops+'駅）', rec.mostStops.legs, rec.mostStops.transfers, rec.mostStops.stops);
+    html += renderOneCandidateHtml('乗り換え最多ルート（'+rec.mostTransfers.transfers+'回）', rec.mostTransfers.legs, rec.mostTransfers.transfers, rec.mostTransfers.stops);
+    html += renderOneCandidateHtml('総合最多ルート（区間'+rec.mostBoth.stops+'・乗換'+rec.mostBoth.transfers+'）', rec.mostBoth.legs, rec.mostBoth.transfers, rec.mostBoth.stops);
+    resultEl.innerHTML = html;
+  }, 30);
+}
+
+const KONAMI_SEQUENCE = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+let konamiProgress = 0;
+document.addEventListener('keydown', (e)=>{
+  const key = e.key.length===1 ? e.key.toLowerCase() : e.key;
+  if(key === KONAMI_SEQUENCE[konamiProgress]){
+    konamiProgress++;
+    if(konamiProgress === KONAMI_SEQUENCE.length){
+      konamiProgress = 0;
+      runKonami();
+    }
+  } else {
+    konamiProgress = (key===KONAMI_SEQUENCE[0]) ? 1 : 0;
+  }
+});
 </script>
 </body>
 </html>
