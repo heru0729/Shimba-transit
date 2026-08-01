@@ -91,6 +91,11 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
   font-size:15px;font-weight:700;letter-spacing:0.05em;cursor:pointer;
 }
 #searchBtn:active{background:var(--primaryDark);}
+#resetBtn{
+  width:100%;padding:11px;margin-top:8px;background:#fff;color:var(--sub);
+  border:1px solid var(--border);border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;
+}
+#resetBtn:active{background:#f0f0f0;}
 #result{margin-top:4px;}
 .resultCard{
   background:var(--card);border:1px solid var(--border);border-radius:10px;
@@ -188,6 +193,7 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
       <div class="legendGrid" id="avoidLineGrid"></div>
     </div>
     <button id="searchBtn" type="button">この条件で検索</button>
+    <button id="resetBtn" type="button">条件をリセット</button>
   </div>
 
   <div class="legendPanel" id="historyPanel"></div>
@@ -922,6 +928,20 @@ document.getElementById('swapBtn').addEventListener('click', ()=>{
 });
 document.getElementById('searchBtn').addEventListener('click', doSearch);
 
+function resetForm(){
+  const fromInput = document.getElementById('fromInput');
+  const toInput = document.getElementById('toInput');
+  const viaInput = document.getElementById('viaInput');
+  fromInput.value=''; fromInput.dataset.value='';
+  toInput.value=''; toInput.dataset.value='';
+  viaInput.value=''; viaInput.dataset.value='';
+  document.querySelectorAll('.avoidLineCheck').forEach(cb=>{ cb.checked=false; });
+  const defaultMode = document.querySelector('input[name="searchMode"][value="transfer"]');
+  if(defaultMode) defaultMode.checked = true;
+  document.getElementById('result').innerHTML = '';
+}
+document.getElementById('resetBtn').addEventListener('click', resetForm);
+
 renderHistory();
 
 function showStationInfo(name){
@@ -1019,7 +1039,7 @@ function computeExtremeRoutes(){
       visited.add(e.to);
       path.push(e.to);
       edgesUsed.push({from:current, to:e.to, type:e.type, cost:e.cost});
-      const addT = isNonRide ? 1 : 0;
+      const addT = (e.type==='transfer' || e.type==='walk') ? 1 : 0;
       const addS = e.type==='ride' ? e.cost : 0;
       dfs(e.to, visited, path, edgesUsed, stops+addS, transfers+addT, isNonRide);
       path.pop(); edgesUsed.pop(); visited.delete(e.to);
