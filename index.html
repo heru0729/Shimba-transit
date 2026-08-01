@@ -283,7 +283,8 @@ const EXTRA_TRANSFERS = [
   {nameA:'桜木', nameB:'桜木山麓', minutes:2},
   {nameA:'白ヶ峰海岸', nameB:'白ヶ峰高原', minutes:2},
   {nameA:'高嶺', nameB:'高嶺中央', minutes:1},
-  {nameA:'南高嶺', nameB:'緑電高嶺', minutes:2}
+  {nameA:'南高嶺', nameB:'緑電高嶺', minutes:2},
+  {nameA:'新初野', nameB:'初野', minutes:1}
 ];
 function getWalkMinutes(nameA, nameB){
   const et = EXTRA_TRANSFERS.find(e=>(e.nameA===nameA && e.nameB===nameB) || (e.nameA===nameB && e.nameB===nameA));
@@ -599,8 +600,16 @@ function renderOneCandidateHtml(labelText, legs, transfers, stops){
       const to = leg.stations[leg.stations.length-1];
       const stopCount = leg.stations.length-1;
       let note='';
-      if(ld.rapid && from.code && to.code && ld.rapid.includes(from.code) && ld.rapid.includes(to.code)) note='快速利用可';
-      if(ld.express && from.code && to.code && ld.express.includes(from.code) && ld.express.includes(to.code)) note='急行利用可';
+      if(!hiddenMode){
+        if(ld.rapid && from.code && to.code && ld.rapid.includes(from.code) && ld.rapid.includes(to.code)){
+          const rapidStops = leg.stations.filter(s=>s.code && ld.rapid.includes(s.code)).length - 1;
+          note = '快速利用可('+rapidStops+'駅)';
+        }
+        if(ld.express && from.code && to.code && ld.express.includes(from.code) && ld.express.includes(to.code)){
+          const expressStops = leg.stations.filter(s=>s.code && ld.express.includes(s.code)).length - 1;
+          note = '急行利用可('+expressStops+'駅)';
+        }
+      }
       let dirNote='';
       if(ld.loop){
         const n = ld.stations.length;
@@ -645,29 +654,53 @@ function mashupAt(a, b, ratio){
   return a.slice(0,ca) + b.slice(b.length-cbLen);
 }
 
-function renderFakeRoute(fromText, toText){
-  const cleanA = fromText.replace(/駅$/,'') || fromText;
-  const cleanB = toText.replace(/駅$/,'') || toText;
-  const legCount = 1 + Math.floor(Math.random()*3);
+function mashupAt(a, b, ratio){
+  const ca = Math.max(1, Math.min(a.length, Math.round(a.length*ratio)));
+  const cbLen = Math.max(1, Math.min(b.length, b.length - Math.round(b.length*ratio)));
+  return a.slice(0,ca) + b.slice(b.length-cbLen);
+}
+
+function pairMashup(a, b, usedNames){
   const ratios = [0.5,0.25,0.75,0.15,0.85,0.35,0.65,0.1,0.9,0.6,0.4];
-  const usedNames = new Set([cleanA, cleanB]);
-  let ratioIdx = 0;
-  function uniqueMashup(){
-    for(let i=0;i<ratios.length;i++){
-      const r = ratios[ratioIdx % ratios.length];
-      ratioIdx++;
-      const cand = mashupAt(cleanA, cleanB, r);
+  for(let i=0;i<ratios.length;i++){
+    const cand = mashupAt(a, b, ratios[i]);
+    if(!usedNames.has(cand)){ usedNames.add(cand); return cand; }
+  }
+  for(let ca=1; ca<=a.length; ca++){
+    for(let cb=1; cb<=b.length; cb++){
+      const cand = a.slice(0,ca) + b.slice(b.length-cb);
       if(!usedNames.has(cand)){ usedNames.add(cand); return cand; }
     }
-    const fallback = mashupAt(cleanA, cleanB, 0.5) + (usedNames.size);
-    usedNames.add(fallback);
-    return fallback;
   }
+  for(let cb=1; cb<=b.length; cb++){
+    for(let ca=1; ca<=a.length; ca++){
+      const cand = b.slice(0,cb) + a.slice(a.length-ca);
+      if(!usedNames.has(cand)){ usedNames.add(cand); return cand; }
+    }
+  }
+  const cand = a+b;
+  usedNames.add(cand);
+  return cand;
+}
+
+function renderFakeRoute(fromText, toText, viaText){
+  const cleanA = fromText.replace(/駅$/,'') || fromText;
+  const cleanB = toText.replace(/駅$/,'') || toText;
+  const usedNames = new Set([cleanA, cleanB]);
+  let stationNames;
+  if(viaText){
+    const cleanVia = viaText.replace(/駅$/,'') || viaText;
+    usedNames.add(cleanVia);
+    stationNames = [cleanA, cleanVia, cleanB];
+  } else {
+    const legCount = 1 + Math.floor(Math.random()*3);
+    stationNames = [cleanA];
+    for(let i=0;i<legCount-1;i++){ stationNames.push(pairMashup(cleanA, cleanB, usedNames)); }
+    stationNames.push(cleanB);
+  }
+  const legCount = stationNames.length-1;
   const lineNames = [];
-  for(let i=0;i<legCount;i++){ lineNames.push(uniqueMashup()+'線'); }
-  const stationNames = [cleanA];
-  for(let i=0;i<legCount-1;i++){ stationNames.push(uniqueMashup()); }
-  stationNames.push(cleanB);
+  for(let i=0;i<legCount;i++){ lineNames.push(pairMashup(stationNames[i], stationNames[i+1], usedNames)+'線'); }
   const stopsArr = [];
   for(let i=0;i<legCount;i++){ stopsArr.push(1+Math.floor(Math.random()*20)); }
   const totalStops = stopsArr.reduce((s,x)=>s+x,0);
@@ -756,7 +789,7 @@ function doSearch(){
     return;
   }
   if(hiddenMode && (!isRealStationExact(fromRaw) || !isRealStationExact(toRaw))){
-    renderFakeRoute(fromRaw, toRaw);
+    renderFakeRoute(fromRaw, toRaw, viaRaw || null);
     return;
   }
   const fromName = resolveStation(fromInput);
