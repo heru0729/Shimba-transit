@@ -639,35 +639,62 @@ function renderCandidates(list, mode){
 
 let hiddenMode = false;
 
-function buildMashupName(a,b){
-  const ca = Math.ceil(a.length/2);
-  const cb = Math.floor(b.length/2);
-  return a.slice(0,ca) + (cb>0 ? b.slice(b.length-cb) : '');
+function mashupAt(a, b, ratio){
+  const ca = Math.max(1, Math.min(a.length, Math.round(a.length*ratio)));
+  const cbLen = Math.max(1, Math.min(b.length, b.length - Math.round(b.length*ratio)));
+  return a.slice(0,ca) + b.slice(b.length-cbLen);
 }
 
 function renderFakeRoute(fromText, toText){
   const cleanA = fromText.replace(/駅$/,'') || fromText;
   const cleanB = toText.replace(/駅$/,'') || toText;
-  const mashup = buildMashupName(cleanA, cleanB);
-  const stops1 = Math.max(1, cleanA.length);
-  const stops2 = Math.max(1, cleanB.length);
-  const transfers = 1;
+  const legCount = 1 + Math.floor(Math.random()*3);
+  const ratios = [0.5,0.25,0.75,0.15,0.85,0.35,0.65,0.1,0.9,0.6,0.4];
+  const usedNames = new Set([cleanA, cleanB]);
+  let ratioIdx = 0;
+  function uniqueMashup(){
+    for(let i=0;i<ratios.length;i++){
+      const r = ratios[ratioIdx % ratios.length];
+      ratioIdx++;
+      const cand = mashupAt(cleanA, cleanB, r);
+      if(!usedNames.has(cand)){ usedNames.add(cand); return cand; }
+    }
+    const fallback = mashupAt(cleanA, cleanB, 0.5) + (usedNames.size);
+    usedNames.add(fallback);
+    return fallback;
+  }
+  const lineNames = [];
+  for(let i=0;i<legCount;i++){ lineNames.push(uniqueMashup()+'線'); }
+  const stationNames = [cleanA];
+  for(let i=0;i<legCount-1;i++){ stationNames.push(uniqueMashup()); }
+  stationNames.push(cleanB);
+  const stopsArr = [];
+  for(let i=0;i<legCount;i++){ stopsArr.push(1+Math.floor(Math.random()*20)); }
+  const totalStops = stopsArr.reduce((s,x)=>s+x,0);
+  const transfers = legCount-1;
+
   let html = '<div class="resultCard">';
   html += '<div class="candidateLabel">🎮 隠しモード経路（架空の駅です）</div>';
-  html += '<div class="summaryBar"><div class="box"><div class="num">'+(stops1+stops2)+'</div><div class="lbl">乗車区間数</div></div><div class="box"><div class="num">'+transfers+'</div><div class="lbl">乗り換え回数</div></div></div>';
-  html += '<div class="rideBlock"><div class="trackCol"><span class="dot" style="border-color:#9b59b6"></span><span class="track" style="background:#9b59b6"></span><span class="dot" style="border-color:#9b59b6"></span></div><div class="rideInfo">';
-  html += '<div class="stName">'+cleanA+'駅</div>';
-  html += '<div class="lineTag" style="background:#9b59b6">幻の隠し線　'+stops1+'駅</div>';
-  html += '<div class="stName">'+mashup+'駅</div>';
-  html += '</div></div>';
-  html += '<div class="transferRow"><div class="icoCol"><div class="ico">⇄</div></div><div class="txt">'+mashup+'駅で乗り換え</div></div>';
-  html += '<div class="rideBlock"><div class="trackCol"><span class="dot" style="border-color:#9b59b6"></span><span class="track" style="background:#9b59b6"></span><span class="dot" style="border-color:#9b59b6"></span></div><div class="rideInfo">';
-  html += '<div class="stName">'+mashup+'駅</div>';
-  html += '<div class="lineTag" style="background:#9b59b6">幻の隠し線　'+stops2+'駅</div>';
-  html += '<div class="stName">'+cleanB+'駅</div>';
-  html += '</div></div>';
+  html += '<div class="summaryBar"><div class="box"><div class="num">'+totalStops+'</div><div class="lbl">乗車区間数</div></div><div class="box"><div class="num">'+transfers+'</div><div class="lbl">乗り換え回数</div></div></div>';
+  for(let i=0;i<legCount;i++){
+    html += '<div class="rideBlock"><div class="trackCol"><span class="dot" style="border-color:#9b59b6"></span><span class="track" style="background:#9b59b6"></span><span class="dot" style="border-color:#9b59b6"></span></div><div class="rideInfo">';
+    html += '<div class="stName">'+stationNames[i]+'駅</div>';
+    html += '<div class="lineTag" style="background:#9b59b6">'+lineNames[i]+'　'+stopsArr[i]+'駅</div>';
+    html += '<div class="stName">'+stationNames[i+1]+'駅</div>';
+    html += '</div></div>';
+    if(i<legCount-1){
+      html += '<div class="transferRow"><div class="icoCol"><div class="ico">⇄</div></div><div class="txt">'+stationNames[i+1]+'駅で乗り換え</div></div>';
+    }
+  }
   html += '</div>';
   document.getElementById('result').innerHTML = html;
+}
+
+function isRealStationExact(text){
+  if(!text) return false;
+  if(STATIONS.some(s=>s.display===text || s.name===text)) return true;
+  const tn = normalizeCode(text);
+  return STATIONS.some(s=>s.codes.some(c=>normalizeCode(c)===tn));
 }
 
 function loadHistory(){
@@ -713,13 +740,6 @@ function normalizeCode(code){
   const m = code.match(/^([A-Za-z\-]*)0*(\d+)$/);
   if(m) return (m[1]||'').toUpperCase() + parseInt(m[2],10);
   return code.toUpperCase();
-}
-
-function isRealStationExact(text){
-  if(!text) return false;
-  if(STATIONS.some(s=>s.display===text || s.name===text)) return true;
-  const tn = normalizeCode(text);
-  return STATIONS.some(s=>s.codes.some(c=>normalizeCode(c)===tn));
 }
 
 function doSearch(){
