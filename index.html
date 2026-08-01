@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>新巴国 乗換案内</title>
+<style>
+:root{
+  --bg:#f2f3f5;
+  --card:#ffffff;
+  --border:#e2e5ea;
+  --text:#1c1c1e;
+  --sub:#767a82;
+  --primary:#e6001f;
+  --primaryDark:#b3001a;
+  --hoverBg:#fff1f2;
+  --hatsuno:#e4002b;
+  --morikyu:#f7931e;
+  --sakuragiLine:#e0b400;
+  --takane:#0072bc;
+  --tozan:#00a651;
+  --midoriyamaMain:#7cb342;
+  --ohirayama:#662d91;
+  --midorihori:#ec008c;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",sans-serif;
+  padding-bottom:60px;
+  font-size:14px;
+}
+header{
+  background:linear-gradient(135deg,var(--primary),var(--primaryDark));
+  padding:18px 16px 16px;
+  color:#fff;
+}
+header .titleRow{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  max-width:520px;
+  margin:0 auto;
+}
+header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:0.02em;}
+header .en{font-size:11px;opacity:0.85;letter-spacing:0.05em;}
+main{max-width:520px;margin:0 auto;padding:14px 12px;}
+.searchCard{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 14px 14px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+  position:relative;
+  margin-bottom:14px;
+}
+.inputGroup{position:relative;margin-bottom:10px;}
+.inputGroup label{display:block;font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:700;}
+.inputGroup input{
+  width:100%;
+  padding:11px 12px;
+  font-size:15px;
+  border:1px solid var(--border);
+  border-radius:6px;
+  background:#fafafa;
+  color:var(--text);
+}
+.inputGroup input:focus{outline:none;border-color:var(--primary);background:#fff;}
+.swapWrap{display:flex;justify-content:flex-end;margin:-14px 0 4px;position:relative;z-index:2;}
+#swapBtn{
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--border);
+  background:#fff;color:var(--primary);font-size:15px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.15);
+  cursor:pointer;
+}
+.suggestBox{
+  position:absolute;left:0;right:0;top:100%;
+  background:#fff;
+  border:1px solid var(--border);border-top:none;
+  border-radius:0 0 8px 8px;
+  max-height:260px;overflow-y:auto;
+  z-index:10;
+  box-shadow:0 6px 14px rgba(0,0,0,0.1);
+  display:none;
+}
+.suggestBox.show{display:block;}
+.suggestItem{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;}
+.suggestItem:last-child{border-bottom:none;}
+.suggestItem:hover, .suggestItem.active{background:var(--hoverBg);}
+.suggestItem .nm{font-size:14px;color:var(--text);}
+.suggestItem .dots{display:flex;gap:3px;margin-left:auto;}
+.suggestItem .dots span{width:8px;height:8px;border-radius:2px;display:block;}
+.toggleRow{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:13px;}
+.toggleRow input{width:16px;height:16px;}
+#searchBtn{
+  width:100%;padding:13px;
+  background:var(--primary);color:#fff;border:none;border-radius:6px;
+  font-size:15px;font-weight:700;letter-spacing:0.05em;cursor:pointer;
+}
+#searchBtn:active{background:var(--primaryDark);}
+#result{margin-top:4px;}
+.resultCard{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:16px 14px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+  margin-bottom:14px;
+}
+.candidateLabel{font-size:13px;font-weight:800;color:var(--primary);margin-bottom:10px;}
+.summaryBar{display:flex;gap:10px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--border);}
+.summaryBar .box{flex:1;text-align:center;}
+.summaryBar .box .num{font-size:24px;font-weight:800;color:var(--primary);}
+.summaryBar .box .lbl{font-size:11px;color:var(--sub);margin-top:2px;}
+.rideBlock{display:flex;gap:12px;}
+.trackCol{width:14px;display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.trackCol .dot{width:11px;height:11px;border-radius:50%;background:#fff;border:3px solid #ccc;flex-shrink:0;}
+.trackCol .track{width:4px;flex:1;min-height:28px;background:#ccc;border-radius:2px;}
+.rideInfo{flex:1;padding:2px 0 16px;}
+.rideInfo .stName{font-size:15px;font-weight:700;padding:2px 0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;}
+.rideInfo .lineTag{
+  display:inline-flex;align-items:center;gap:6px;
+  color:#fff;font-size:12px;font-weight:700;
+  padding:3px 9px;border-radius:4px;margin:6px 0;
+}
+.transferRow{display:flex;align-items:center;gap:10px;padding:2px 0 14px;}
+.transferRow .icoCol{width:14px;display:flex;justify-content:center;flex-shrink:0;}
+.transferRow .ico{width:22px;height:22px;border-radius:50%;background:#f0f1f3;display:flex;align-items:center;justify-content:center;font-size:12px;}
+.transferRow .txt{font-size:12.5px;color:var(--sub);}
+.msg{padding:20px 4px;color:var(--sub);font-size:13px;text-align:center;}
+.legendPanel{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
+.legendTitle{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:8px;}
+.legendGrid{display:flex;flex-wrap:wrap;gap:7px;}
+.legendItem{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);background:#f7f7f8;border:1px solid var(--border);border-radius:5px;padding:5px 9px;}
+.legendItem .sw{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
+.modalBackdrop{
+  position:fixed;inset:0;background:rgba(0,0,0,0.45);
+  display:flex;align-items:center;justify-content:center;
+  z-index:100;padding:16px;
+}
+.modalPanel{background:#fff;border-radius:12px;padding:16px;max-width:320px;width:100%;max-height:80vh;overflow-y:auto;}
+.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.modalTitle{font-size:16px;font-weight:800;}
+.modalClose{background:none;border:none;font-size:22px;color:var(--sub);cursor:pointer;line-height:1;}
+.infoLine{margin-bottom:10px;}
+.infoLineBadge{display:inline-block;color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:4px;}
+.infoAdj{font-size:12.5px;color:var(--text);}
+</style>
+</head>
+<body>
+<header>
+  <div class="titleRow">
+    <h1>新巴国 乗換案内</h1>
+    <span class="en">Shimba Server</span>
+  </div>
+</header>
+<main>
+  <div class="searchCard">
+    <div class="inputGroup" id="fromGroup">
+      <label>出発駅</label>
+      <input type="text" id="fromInput" placeholder="駅名を入力" autocomplete="off">
+      <div class="suggestBox" id="fromSuggest"></div>
+    </div>
+    <div class="swapWrap">
+      <button id="swapBtn" type="button">⇅</button>
+    </div>
+    <div class="inputGroup" id="toGroup">
+      <label>到着駅</label>
+      <input type="text" id="toInput" placeholder="駅名を入力" autocomplete="off">
+      <div class="suggestBox" id="toSuggest"></div>
+    </div>
+    <div class="toggleRow">
+      <input type="checkbox" id="expressOnlyToggle">
+      <label for="expressOnlyToggle">快速・急行のみで移動</label>
+    </div>
+    <button id="searchBtn" type="button">この条件で検索</button>
+  </div>
+
+  <div id="result"></div>
+
+  <div class="legendPanel">
+    <div class="legendTitle">路線カラー</div>
+    <div class="legendGrid" id="legend"></div>
+  </div>
+</main>
+
+<div id="modalRoot"></div>
+
+<script>
+const LINES = [
+  { id:'hatsuno', name:'レモンメトロ初野線', stations:[
+    {code:'H01', name:'檸檬'},
+    {code:'H02', name:'初野'},
+    {code:'H03', name:'桜木'},
+    {code:'H04', name:'桜木山麓'},
+    {code:'H05', name:'孤城', display:'孤城(孤城港前)'},
+    {code:'H06', name:'海丘'}
+  ]},
+  { id:'morikyu', name:'森急南北線', stations:[
+    {code:'MN01', name:'檸檬'},
+    {code:'MN02', name:'れもん大通', display:'れもん大通(檸檬山麓)'},
+    {code:'MN03', name:'新檸檬', display:'新檸檬(国立劇場前)'}
+  ]},
+  { id:'sakuragiLine', name:'レモンメトロ桜木線', stations:[
+    {code:'S01', name:'森沢'},
+    {code:'S02', name:'西森沢'},
+    {code:'S03', name:'東檸檬'},
+    {code:'S04', name:'新初野'},
+    {code:'S05', name:'桜木'},
+    {code:'S06', name:'桜木山麓'}
+  ]},
+  { id:'takane', name:'レモンメトロ高嶺線', loop:true, rapid:['T01','T02','T03','T06','T09'], stations:[
+    {code:'T01', name:'大岡'},
+    {code:'T02', name:'初野'},
+    {code:'T03', name:'桜木'},
+    {code:'T04', name:'西桜木'},
+    {code:'T05', name:'押草'},
+    {code:'T06', name:'高嶺中央'},
+    {code:'T07', name:'北島海岸'},
+    {code:'T08', name:'獅子島海岸'},
+    {code:'T09', name:'白々峰高原'},
+    {code:'T10', name:'合歓村'}
+  ]},
+  { id:'tozan', name:'桜木登山鉄道線', stations:[
+    {code:'SR01', name:'桜木山麓'},
+    {code:'SR02', name:'桜木橋'},
+    {code:'SR03', name:'桜木湖'},
+    {code:'SR04', name:'桜見丘'},
+    {code:'SR05', name:'桜木山頂前'},
+    {code:'SR06', name:'西桜木'},
+    {code:'SR07', name:'緑山'}
+  ]},
+  { id:'midoriyamaMain', name:'緑山本線', stations:[
+    {name:'緑山'},
+    {name:'南緑山'},
+    {name:'アリウムの丘'},
+    {name:'二水'},
+    {name:'栄浜'},
+    {name:'緑電高嶺', display:'緑電高嶺(竜々村)'}
+  ]},
+  { id:'ohirayama', name:'大平山線', stations:[
+    {name:'栄浜'},
+    {name:'大平山'},
+    {name:'白々峰海岸'}
+  ]},
+  { id:'midorihori', name:'緑堀線', express:['R01','R02','R05','R06'], stations:[
+    {code:'R01', name:'緑山'},
+    {code:'R02', name:'西桜木'},
+    {code:'R03', name:'南孤城'},
+    {code:'R04', name:'孤城山麓'},
+    {code:'R05', name:'両江'},
+    {code:'R06', name:'堀岩'}
+  ]}
+];
+
+const EXTRA_TRANSFERS = [
+  {nameA:'桜木', nameB:'桜木山麓'},
+  {nameA:'白々峰海岸', nameB:'白々峰高原'}
+];
+
+function buildGraph(){
+  const nodes = {};
+  const adj = {};
+  function nodeId(lineId, idx){ return lineId+'#'+idx; }
+  function addEdge(a,b,type,cost){
+    adj[a].push({to:b,type,cost});
+    adj[b].push({to:a,type,cost});
+  }
+  LINES.forEach(line=>{
+    line.stations.forEach((st, idx)=>{
+      const id = nodeId(line.id, idx);
+      nodes[id] = {id, lineId:line.id, lineName:line.name, code:st.code, name:st.name, display:st.display||st.name, idx};
+      adj[id]=[];
+    });
+  });
+  LINES.forEach(line=>{
+    const n = line.stations.length;
+    for(let i=0;i<n-1;i++){
+      addEdge(nodeId(line.id,i), nodeId(line.id,i+1), 'ride', 1);
+    }
+    if(line.loop){
+      addEdge(nodeId(line.id,n-1), nodeId(line.id,0), 'ride', 1);
+    }
+  });
+  const byName = {};
+  Object.values(nodes).forEach(nd=>{
+    (byName[nd.name] = byName[nd.name] || []).push(nd.id);
+  });
+  Object.entries(byName).forEach(([name, ids])=>{
+    if(ids.length>1){
+      for(let i=0;i<ids.length;i++){
+        for(let j=i+1;j<ids.length;j++){
+          const type = name==='檸檬' ? 'through' : 'transfer';
+          addEdge(ids[i], ids[j], type, 0);
+        }
+      }
+    }
+  });
+  EXTRA_TRANSFERS.forEach(et=>{
+    const a = Object.values(nodes).find(nd=>nd.name===et.nameA);
+    const b = Object.values(nodes).find(nd=>nd.name===et.nameB);
+    addEdge(a.id, b.id, 'walk', 1);
+  });
+  return {nodes, adj};
+}
+const GRAPH = buildGraph();
+
+function buildStationIndex(){
+  const map = {};
+  LINES.forEach(line=>{
+    line.stations.forEach(st=>{
+      if(!map[st.name]){
+        map[st.name] = {name:st.name, display:st.display||st.name, lines:[]};
+      }
+      map[st.name].lines.push(line.id);
+    });
+  });
+  return Object.values(map);
+}
+const STATIONS = buildStationIndex();
+
+function buildStationInfo(){
+  const map = {};
+  LINES.forEach(line=>{
+    const n = line.stations.length;
+    line.stations.forEach((st,idx)=>{
+      if(!map[st.name]) map[st.name] = {name:st.name, display:st.display||st.name, entries:[]};
+      let prev=null, next=null;
+      if(idx>0) prev = line.stations[idx-1];
+      else if(line.loop) prev = line.stations[n-1];
+      if(idx<n-1) next = line.stations[idx+1];
+      else if(line.loop) next = line.stations[0];
+      map[st.name].entries.push({
+        lineId:line.id, lineName:line.name, code:st.code,
+        prev: prev ? (prev.display||prev.name) : null,
+        next: next ? (next.display||next.name) : null
+      });
+    });
+  });
+  return map;
+}
+const STATION_INFO = buildStationInfo();
+
+function lineDef(lineId){ return LINES.find(l=>l.id===lineId); }
+
+function cloneAdj(adj){
+  const c = {};
+  Object.keys(adj).forEach(k=>{ c[k] = adj[k].slice(); });
+  return c;
+}
+function removeEdge(adj,a,b){
+  adj[a] = (adj[a]||[]).filter(e=>e.to!==b);
+  adj[b] = (adj[b]||[]).filter(e=>e.to!==a);
+}
+function removeNode(adj,id){
+  adj[id] = [];
+  Object.keys(adj).forEach(k=>{ adj[k] = adj[k].filter(e=>e.to!==id); });
+}
+function arraysEqual(a,b){
+  if(a.length!==b.length) return false;
+  for(let i=0;i<a.length;i++){ if(a[i]!==b[i]) return false; }
+  return true;
+}
+function edgeWeight(e){
+  if(e.type==='ride') return e.cost;
+  if(e.type==='transfer' || e.type==='walk') return 1000;
+  return 0;
+}
+
+function dijkstraScalar(adj, nodeIds, start, target){
+  const dist={}, prev={}, visited={};
+  nodeIds.forEach(id=>{ dist[id]=Infinity; });
+  dist[start]=0;
+  while(true){
+    let u=null, best=Infinity;
+    nodeIds.forEach(id=>{
+      if(!visited[id] && dist[id]<best){ best=dist[id]; u=id; }
+    });
+    if(u===null) break;
+    if(u===target) break;
+    visited[u]=true;
+    (adj[u]||[]).forEach(e=>{
+      const w = edgeWeight(e);
+      const nd = dist[u]+w;
+      if(nd<dist[e.to]){ dist[e.to]=nd; prev[e.to]={from:u,type:e.type}; }
+    });
+  }
+  if(dist[target]===Infinity) return null;
+  const path=[]; let cur=target;
+  while(cur){ path.unshift(cur); cur = prev[cur] ? prev[cur].from : null; }
+  const edgesUsed=[];
+  for(let i=1;i<path.length;i++){ edgesUsed.push({from:path[i-1], to:path[i], type:prev[path[i]].type}); }
+  return {path, edgesUsed, cost:dist[target]};
+}
+
+function buildQueryGraph(startName, endName){
+  const adj = cloneAdj(GRAPH.adj);
+  adj['__start__']=[]; adj['__end__']=[];
+  Object.values(GRAPH.nodes).forEach(nd=>{
+    if(nd.name===startName){
+      adj['__start__'].push({to:nd.id,type:'virtual',cost:0});
+      adj[nd.id].push({to:'__start__',type:'virtual',cost:0});
+    }
+    if(nd.name===endName){
+      adj[nd.id].push({to:'__end__',type:'virtual',cost:0});
+      adj['__end__'].push({to:nd.id,type:'virtual',cost:0});
+    }
+  });
+  return adj;
+}
+
+function yenKShortest(startName, endName, K){
+  const baseAdj = buildQueryGraph(startName, endName);
+  const nodeIds = Object.keys(baseAdj);
+  const first = dijkstraScalar(baseAdj, nodeIds, '__start__', '__end__');
+  if(!first) return [];
+  const A = [first];
+  const B = [];
+  for(let k=1;k<K;k++){
+    const prevPath = A[k-1].path;
+    for(let i=0;i<prevPath.length-1;i++){
+      const spurNode = prevPath[i];
+      const rootPath = prevPath.slice(0,i+1);
+      const adjCopy = cloneAdj(baseAdj);
+      A.forEach(p=>{
+        if(p.path.length>i+1 && arraysEqual(p.path.slice(0,i+1), rootPath)){
+          removeEdge(adjCopy, p.path[i], p.path[i+1]);
+        }
+      });
+      rootPath.slice(0,-1).forEach(nid=>{ removeNode(adjCopy, nid); });
+      const spurRes = dijkstraScalar(adjCopy, Object.keys(adjCopy), spurNode, '__end__');
+      if(spurRes){
+        const totalPath = rootPath.slice(0,-1).concat(spurRes.path);
+        const rootCost = A[k-1].cumCost ? A[k-1].cumCost[i] : sumEdges(A[k-1].edgesUsed.slice(0,i));
+        const totalCost = rootCost + spurRes.cost;
+        const already = A.some(p=>arraysEqual(p.path,totalPath)) || B.some(p=>arraysEqual(p.path,totalPath));
+        if(!already){
+          const totalEdges = A[k-1].edgesUsed.slice(0,i).concat(spurRes.edgesUsed);
+          B.push({path:totalPath, edgesUsed:totalEdges, cost:totalCost});
+        }
+      }
+    }
+    if(B.length===0) break;
+    B.sort((a,b)=>a.cost-b.cost);
+    A.push(B.shift());
+  }
+  A.forEach(p=>{
+    const cum=[0];
+    p.edgesUsed.forEach(e=>{ cum.push(cum[cum.length-1]+edgeWeight(e)); });
+    p.cumCost = cum;
+  });
+  return A;
+}
+function sumEdges(edges){
+  return edges.reduce((s,e)=>s+edgeWeight(e),0);
+}
+
+function buildItinerary(nodes, path, edgesUsed){
+  const legs=[];
+  let currentLeg=null;
+  path.forEach((id,i)=>{
+    const nd = nodes[id];
+    if(i===0){
+      currentLeg = {ride:true, lineId:nd.lineId, lineName:nd.lineName, stations:[nd]};
+      return;
+    }
+    const edge = edgesUsed[i-1];
+    if(edge.type==='ride'){
+      currentLeg.stations.push(nd);
+    } else {
+      legs.push(currentLeg);
+      legs.push({transfer:true, type:edge.type, from:nodes[edge.from], to:nd});
+      currentLeg = {ride:true, lineId:nd.lineId, lineName:nd.lineName, stations:[nd]};
+    }
+  });
+  legs.push(currentLeg);
+  return legs;
+}
+
+function pathToItinerary(rawPath, rawEdges){
+  const path = rawPath.filter(id=>id!=='__start__' && id!=='__end__');
+  const edgesUsed = rawEdges.filter(e=>e.type!=='virtual');
+  return buildItinerary(GRAPH.nodes, path, edgesUsed);
+}
+
+function itinerarySignature(legs){
+  return legs.filter(l=>!l.ride || l.stations.length>1).map(l=>{
+    if(l.ride) return 'R:'+l.lineId+':'+l.stations[0].name+'>'+l.stations[l.stations.length-1].name;
+    return 'T:'+l.type+':'+l.from.name+'>'+l.to.name;
+  }).join('|');
+}
+
+function matchesExpressFilter(legs){
+  return legs.every(l=>{
+    if(!l.ride) return true;
+    if(l.stations.length<2) return true;
+    const ld = lineDef(l.lineId);
+    const stopsList = ld.rapid || ld.express;
+    if(!stopsList) return true;
+    const from = l.stations[0], to = l.stations[l.stations.length-1];
+    return from.code && to.code && stopsList.includes(from.code) && stopsList.includes(to.code);
+  });
+}
+
+function renderCandidates(list){
+  const resultEl = document.getElementById('result');
+  let html = '';
+  list.forEach((cand,idx)=>{
+    const transfers = Math.floor(cand.cost/1000);
+    const stops = cand.cost%1000;
+    html += '<div class="resultCard">';
+    html += '<div class="candidateLabel">経路'+(idx+1)+(idx===0?'（おすすめ）':'')+'</div>';
+    html += '<div class="summaryBar">';
+    html += '<div class="box"><div class="num">'+stops+'</div><div class="lbl">乗車区間数</div></div>';
+    html += '<div class="box"><div class="num">'+transfers+'</div><div class="lbl">乗り換え回数</div></div>';
+    html += '</div>';
+    cand.legs.forEach(leg=>{
+      if(leg.ride){
+        if(leg.stations.length<2) return;
+        const ld = lineDef(leg.lineId);
+        const from = leg.stations[0];
+        const to = leg.stations[leg.stations.length-1];
+        const stopCount = leg.stations.length-1;
+        let note='';
+        if(ld.rapid && from.code && to.code && ld.rapid.includes(from.code) && ld.rapid.includes(to.code)) note='快速利用可';
+        if(ld.express && from.code && to.code && ld.express.includes(from.code) && ld.express.includes(to.code)) note='急行利用可';
+        let dirNote='';
+        if(ld.loop){
+          const n = ld.stations.length;
+          const diff = ((leg.stations[1].idx - leg.stations[0].idx) + n) % n;
+          dirNote = diff===1 ? '内回り' : '外回り';
+        }
+        html += '<div class="rideBlock">';
+        html += '<div class="trackCol"><span class="dot" style="border-color:var(--'+leg.lineId+')"></span><span class="track" style="background:var(--'+leg.lineId+')"></span><span class="dot" style="border-color:var(--'+leg.lineId+')"></span></div>';
+        html += '<div class="rideInfo">';
+        html += '<div class="stName" onclick="showStationInfo(\''+from.name+'\')">'+from.display+'</div>';
+        html += '<div class="lineTag" style="background:var(--'+leg.lineId+')">'+ld.name+(dirNote?'（'+dirNote+'）':'')+'　'+stopCount+'駅'+(note?'　'+note:'')+'</div>';
+        html += '<div class="stName" onclick="showStationInfo(\''+to.name+'\')">'+to.display+'</div>';
+        html += '</div></div>';
+      } else {
+        let ico='⇄', text='';
+        if(leg.type==='through'){ ico='➡'; text=leg.from.display+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'; }
+        else if(leg.type==='walk'){ ico='🚶'; text=leg.from.display+' → '+leg.to.display+'　徒歩2分乗り換え'; }
+        else { ico='⇄'; text=leg.from.display+'駅で'+leg.to.lineName+'に乗り換え'; }
+        html += '<div class="transferRow"><div class="icoCol"><div class="ico">'+ico+'</div></div><div class="txt">'+text+'</div></div>';
+      }
+    });
+    html += '</div>';
+  });
+  resultEl.innerHTML = html;
+}
+
+function doSearch(){
+  const fromInput = document.getElementById('fromInput');
+  const toInput = document.getElementById('toInput');
+  const fromName = resolveStation(fromInput);
+  const toName = resolveStation(toInput);
+  const resultEl = document.getElementById('result');
+  if(!fromName || !toName){
+    resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅・到着駅を候補から選択してください。</div></div>';
+    return;
+  }
+  if(fromName===toName){
+    resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅と到着駅が同じです。</div></div>';
+    return;
+  }
+  const raw = yenKShortest(fromName, toName, 12);
+  if(raw.length===0){
+    resultEl.innerHTML = '<div class="resultCard"><div class="msg">経路が見つかりませんでした。</div></div>';
+    return;
+  }
+  let candidates = raw.map(r=>{
+    const legs = pathToItinerary(r.path, r.edgesUsed);
+    return {legs, cost:r.cost, sig:itinerarySignature(legs)};
+  });
+  const expressOnly = document.getElementById('expressOnlyToggle').checked;
+  if(expressOnly){
+    candidates = candidates.filter(c=>matchesExpressFilter(c.legs));
+  }
+  const seen = new Set(); const unique=[];
+  candidates.forEach(c=>{ if(!seen.has(c.sig)){ seen.add(c.sig); unique.push(c); } });
+  const top = unique.slice(0,3);
+  if(top.length===0){
+    resultEl.innerHTML = '<div class="resultCard"><div class="msg">'+(expressOnly?'快速・急行のみでは経路が見つかりませんでした。':'経路が見つかりませんでした。')+'</div></div>';
+    return;
+  }
+  renderCandidates(top);
+}
+
+function renderLegend(){
+  const el = document.getElementById('legend');
+  LINES.forEach(line=>{
+    const item = document.createElement('div');
+    item.className = 'legendItem';
+    item.innerHTML = '<div class="sw" style="background:var(--'+line.id+')"></div>'+line.name;
+    el.appendChild(item);
+  });
+}
+renderLegend();
+
+function setupAutocomplete(inputId, boxId){
+  const input = document.getElementById(inputId);
+  const box = document.getElementById(boxId);
+  function filterStations(q){
+    if(!q) return [];
+    return STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q)).slice(0,10);
+  }
+  function renderBox(list){
+    if(list.length===0){ box.classList.remove('show'); box.innerHTML=''; return; }
+    box.innerHTML = list.map(s=>{
+      const dots = s.lines.map(lid=>'<span style="background:var(--'+lid+')"></span>').join('');
+      return '<div class="suggestItem" data-name="'+s.name+'" data-display="'+s.display+'"><span class="nm">'+s.display+'</span><span class="dots">'+dots+'</span></div>';
+    }).join('');
+    box.classList.add('show');
+  }
+  input.addEventListener('input', ()=>{
+    input.dataset.value = '';
+    renderBox(filterStations(input.value.trim()));
+  });
+  input.addEventListener('focus', ()=>{
+    if(input.value.trim()){ renderBox(filterStations(input.value.trim())); }
+  });
+  box.addEventListener('click', (e)=>{
+    const item = e.target.closest('.suggestItem');
+    if(!item) return;
+    input.value = item.dataset.display;
+    input.dataset.value = item.dataset.name;
+    box.classList.remove('show');
+    box.innerHTML='';
+  });
+  input.addEventListener('keydown', (e)=>{
+    if(e.key==='Enter'){ box.classList.remove('show'); doSearch(); }
+  });
+  document.addEventListener('click', (e)=>{
+    if(!e.target.closest('#'+inputId) && !e.target.closest('#'+boxId)){ box.classList.remove('show'); }
+  });
+}
+
+function resolveStation(input){
+  const val = input.value.trim();
+  if(!val) return null;
+  if(input.dataset.value){
+    const st = STATIONS.find(s=>s.name===input.dataset.value);
+    if(st && st.display===val) return st.name;
+  }
+  const exact = STATIONS.find(s=>s.display===val || s.name===val);
+  if(exact) return exact.name;
+  const partial = STATIONS.filter(s=>s.display.includes(val) || s.name.includes(val));
+  if(partial.length>0) return partial[0].name;
+  return null;
+}
+
+setupAutocomplete('fromInput','fromSuggest');
+setupAutocomplete('toInput','toSuggest');
+
+document.getElementById('swapBtn').addEventListener('click', ()=>{
+  const fromInput = document.getElementById('fromInput');
+  const toInput = document.getElementById('toInput');
+  const tv = fromInput.value, td = fromInput.dataset.value;
+  fromInput.value = toInput.value; fromInput.dataset.value = toInput.dataset.value;
+  toInput.value = tv; toInput.dataset.value = td;
+});
+document.getElementById('searchBtn').addEventListener('click', doSearch);
+
+function showStationInfo(name){
+  const info = STATION_INFO[name];
+  if(!info) return;
+  let html = '<div class="modalBackdrop" id="modalBackdrop" onclick="if(event.target.id===\'modalBackdrop\')closeModal()"><div class="modalPanel">';
+  html += '<div class="modalHead"><div class="modalTitle">'+info.display+'</div><button class="modalClose" onclick="closeModal()">×</button></div>';
+  info.entries.forEach(e=>{
+    html += '<div class="infoLine"><span class="infoLineBadge" style="background:var(--'+e.lineId+')">'+e.lineName+(e.code?'　'+e.code:'')+'</span>';
+    html += '<div class="infoAdj">◀ '+(e.prev||'（始発）')+'　|　'+(e.next||'（終着）')+' ▶</div></div>';
+  });
+  html += '</div></div>';
+  document.getElementById('modalRoot').innerHTML = html;
+}
+function closeModal(){ document.getElementById('modalRoot').innerHTML=''; }
+</script>
+</body>
+</html>
