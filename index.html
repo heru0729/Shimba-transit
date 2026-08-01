@@ -38,13 +38,7 @@ header{
   padding:18px 16px 16px;
   color:#fff;
 }
-header .titleRow{
-  display:flex;
-  align-items:baseline;
-  gap:8px;
-  max-width:520px;
-  margin:0 auto;
-}
+header .titleRow{display:flex;align-items:baseline;gap:8px;max-width:520px;margin:0 auto;}
 header h1{margin:0;font-size:19px;font-weight:700;letter-spacing:0.02em;}
 header .en{font-size:11px;opacity:0.85;letter-spacing:0.05em;}
 main{max-width:520px;margin:0 auto;padding:14px 12px;}
@@ -60,32 +54,22 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .inputGroup{position:relative;margin-bottom:10px;}
 .inputGroup label{display:block;font-size:11px;color:var(--sub);margin-bottom:4px;font-weight:700;}
 .inputGroup input{
-  width:100%;
-  padding:11px 12px;
-  font-size:15px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  background:#fafafa;
-  color:var(--text);
+  width:100%;padding:11px 12px;font-size:15px;
+  border:1px solid var(--border);border-radius:6px;
+  background:#fafafa;color:var(--text);
 }
 .inputGroup input:focus{outline:none;border-color:var(--primary);background:#fff;}
 .swapWrap{display:flex;justify-content:flex-end;margin:-14px 0 4px;position:relative;z-index:2;}
 #swapBtn{
   width:34px;height:34px;border-radius:50%;
-  border:1px solid var(--border);
-  background:#fff;color:var(--primary);font-size:15px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.15);
-  cursor:pointer;
+  border:1px solid var(--border);background:#fff;color:var(--primary);font-size:15px;
+  box-shadow:0 1px 3px rgba(0,0,0,0.15);cursor:pointer;
 }
 .suggestBox{
   position:absolute;left:0;right:0;top:100%;
-  background:#fff;
-  border:1px solid var(--border);border-top:none;
-  border-radius:0 0 8px 8px;
-  max-height:260px;overflow-y:auto;
-  z-index:10;
-  box-shadow:0 6px 14px rgba(0,0,0,0.1);
-  display:none;
+  background:#fff;border:1px solid var(--border);border-top:none;
+  border-radius:0 0 8px 8px;max-height:260px;overflow-y:auto;
+  z-index:10;box-shadow:0 6px 14px rgba(0,0,0,0.1);display:none;
 }
 .suggestBox.show{display:block;}
 .suggestItem{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer;border-bottom:1px solid #f0f0f0;}
@@ -99,26 +83,18 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .optionLabel{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:6px;display:block;}
 .radioRow{display:flex;gap:16px;font-size:13px;flex-wrap:wrap;}
 .radioRow label{display:flex;align-items:center;gap:5px;}
-#avoidLineSelect{
-  width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;
-  background:#fafafa;font-size:14px;color:var(--text);
-}
-.toggleRow{display:flex;align-items:center;gap:8px;margin:8px 0 10px;font-size:13px;}
-.toggleRow input{width:16px;height:16px;}
+.avoidLabel{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text);background:#f7f7f8;border:1px solid var(--border);border-radius:5px;padding:5px 9px;cursor:pointer;}
+.avoidLabel input{width:14px;height:14px;}
+.avoidLabel .sw{width:9px;height:9px;border-radius:2px;flex-shrink:0;}
 #searchBtn{
-  width:100%;padding:13px;
-  background:var(--primary);color:#fff;border:none;border-radius:6px;
+  width:100%;padding:13px;background:var(--primary);color:#fff;border:none;border-radius:6px;
   font-size:15px;font-weight:700;letter-spacing:0.05em;cursor:pointer;
 }
 #searchBtn:active{background:var(--primaryDark);}
 #result{margin-top:4px;}
 .resultCard{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:10px;
-  padding:16px 14px;
-  box-shadow:0 1px 3px rgba(0,0,0,0.06);
-  margin-bottom:14px;
+  background:var(--card);border:1px solid var(--border);border-radius:10px;
+  padding:16px 14px;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:14px;
 }
 .candidateLabel{font-size:13px;font-weight:800;color:var(--primary);margin-bottom:10px;}
 .summaryBar{display:flex;gap:10px;padding-bottom:14px;margin-bottom:14px;border-bottom:1px dashed var(--border);}
@@ -131,16 +107,17 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .trackCol .track{width:4px;flex:1;min-height:28px;background:#ccc;border-radius:2px;}
 .rideInfo{flex:1;padding:2px 0 16px;}
 .rideInfo .stName{font-size:15px;font-weight:700;padding:2px 0;cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;}
+.rideInfo .stName rt{font-size:0.55em;color:var(--sub);font-weight:400;}
 .rideInfo .codeBadge{font-size:11px;font-weight:700;color:var(--sub);background:#f0f1f3;border-radius:4px;padding:1px 6px;margin-left:4px;text-decoration:none;display:inline-block;}
 .rideInfo .lineTag{
-  display:inline-flex;align-items:center;gap:6px;
-  color:#fff;font-size:12px;font-weight:700;
+  display:inline-flex;align-items:center;gap:6px;color:#fff;font-size:12px;font-weight:700;
   padding:3px 9px;border-radius:4px;margin:6px 0;
 }
 .transferRow{display:flex;align-items:center;gap:10px;padding:2px 0 14px;}
 .transferRow .icoCol{width:14px;display:flex;justify-content:center;flex-shrink:0;}
 .transferRow .ico{width:22px;height:22px;border-radius:50%;background:#f0f1f3;display:flex;align-items:center;justify-content:center;font-size:12px;}
 .transferRow .txt{font-size:12.5px;color:var(--sub);}
+.transferRow .txt rt{font-size:0.6em;color:var(--sub);}
 .msg{padding:20px 4px;color:var(--sub);font-size:13px;text-align:center;}
 .legendPanel{margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;}
 .legendTitle{font-size:11px;color:var(--sub);font-weight:700;margin-bottom:8px;}
@@ -152,6 +129,7 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .lineStationRow{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid #f0f0f0;cursor:pointer;}
 .lineStationRow:last-child{border-bottom:none;}
 .lineStationRow:hover{background:var(--hoverBg);}
+.lineStationRow rt{font-size:0.6em;color:var(--sub);}
 .lineStationCode{font-size:11px;font-weight:700;color:var(--sub);width:44px;flex-shrink:0;}
 .lineStationName{font-size:14px;color:var(--text);}
 .loopNote{font-size:12px;color:var(--sub);margin-top:6px;text-align:center;}
@@ -159,18 +137,16 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
 .sortToggleRow{display:flex;gap:8px;margin-bottom:12px;}
 .sortBtn{flex:1;padding:8px;border:1px solid var(--border);background:#f7f7f8;border-radius:6px;font-size:12px;font-weight:700;color:var(--sub);cursor:pointer;}
 .sortBtn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
-.modalBackdrop{
-  position:fixed;inset:0;background:rgba(0,0,0,0.45);
-  display:flex;align-items:center;justify-content:center;
-  z-index:100;padding:16px;
-}
+.modalBackdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px;}
 .modalPanel{background:#fff;border-radius:12px;padding:16px;max-width:320px;width:100%;max-height:80vh;overflow-y:auto;}
 .modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
 .modalTitle{font-size:16px;font-weight:800;}
+.modalTitle rt{font-size:0.55em;color:var(--sub);}
 .modalClose{background:none;border:none;font-size:22px;color:var(--sub);cursor:pointer;line-height:1;}
 .infoLine{margin-bottom:10px;}
 .infoLineBadge{display:inline-block;color:#fff;font-size:12px;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:4px;}
 .infoAdj{font-size:12.5px;color:var(--text);}
+.infoAdj rt{font-size:0.6em;color:var(--sub);}
 </style>
 </head>
 <body>
@@ -184,7 +160,7 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
   <div class="searchCard">
     <div class="inputGroup" id="fromGroup">
       <label>出発駅</label>
-      <input type="text" id="fromInput" placeholder="駅名 または 駅番号(H03など)" autocomplete="off">
+      <input type="text" id="fromInput" placeholder="駅名または駅番号を入力" autocomplete="off">
       <div class="suggestBox" id="fromSuggest"></div>
     </div>
     <div class="swapWrap">
@@ -192,7 +168,7 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
     </div>
     <div class="inputGroup" id="toGroup">
       <label>到着駅</label>
-      <input type="text" id="toInput" placeholder="駅名 または 駅番号(H03など)" autocomplete="off">
+      <input type="text" id="toInput" placeholder="駅名または駅番号を入力" autocomplete="off">
       <div class="suggestBox" id="toSuggest"></div>
     </div>
     <div class="inputGroup" id="viaGroup">
@@ -208,12 +184,8 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
       </div>
     </div>
     <div class="optionBlock">
-      <label class="optionLabel" for="avoidLineSelect">避ける路線</label>
-      <select id="avoidLineSelect"></select>
-    </div>
-    <div class="toggleRow">
-      <input type="checkbox" id="expressOnlyToggle">
-      <label for="expressOnlyToggle">快速・急行のみで移動</label>
+      <div class="optionLabel">避ける路線（複数選択可）</div>
+      <div class="legendGrid" id="avoidLineGrid"></div>
     </div>
     <button id="searchBtn" type="button">この条件で検索</button>
   </div>
@@ -263,7 +235,7 @@ const LINES = [
     {code:'T06', name:'高嶺中央'},
     {code:'T07', name:'北島海岸'},
     {code:'T08', name:'獅子島海岸'},
-    {code:'T09', name:'白々峰高原'},
+    {code:'T09', name:'白ヶ峰高原'},
     {code:'T10', name:'合歓村'}
   ]},
   { id:'tozan', name:'桜木登山鉄道線', stations:[
@@ -285,8 +257,9 @@ const LINES = [
   ]},
   { id:'ohirayama', name:'大平山線', stations:[
     {name:'栄浜'},
+    {name:'平井湖'},
     {name:'大平山'},
-    {name:'白々峰海岸'}
+    {name:'白ヶ峰海岸'}
   ]},
   { id:'midorihori', name:'緑堀線', express:['R01','R02','R05','R06'], stations:[
     {code:'R01', name:'緑山'},
@@ -308,13 +281,32 @@ const LINES = [
 
 const EXTRA_TRANSFERS = [
   {nameA:'桜木', nameB:'桜木山麓', minutes:2},
-  {nameA:'白々峰海岸', nameB:'白々峰高原', minutes:2},
+  {nameA:'白ヶ峰海岸', nameB:'白ヶ峰高原', minutes:2},
   {nameA:'高嶺', nameB:'高嶺中央', minutes:1},
   {nameA:'南高嶺', nameB:'緑電高嶺', minutes:2}
 ];
 function getWalkMinutes(nameA, nameB){
   const et = EXTRA_TRANSFERS.find(e=>(e.nameA===nameA && e.nameB===nameB) || (e.nameA===nameB && e.nameB===nameA));
   return et ? et.minutes : 2;
+}
+
+const STATION_READING = {
+  '檸檬':'れもん','初野':'はつの','桜木':'さくらぎ','桜木山麓':'さくらぎさんろく','孤城':'こじょう',
+  '海丘':'うみおか','れもん大通':'れもんおおどおり','新檸檬':'しんれもん','森沢':'もりさわ','西森沢':'にしもりさわ',
+  '東檸檬':'ひがしれもん','新初野':'しんはつの','大岡':'おおおか','西桜木':'にしさくらぎ','押草':'おしくさ',
+  '高嶺中央':'たかねちゅうおう','北島海岸':'きたじまかいがん','獅子島海岸':'ししじまかいがん','白ヶ峰高原':'しらがみねこうげん',
+  '合歓村':'ねむむら','桜木橋':'さくらぎばし','桜木湖':'さくらぎこ','桜見丘':'さくらみおか','桜木山頂前':'さくらぎさんちょうまえ',
+  '緑山':'みどりやま','南緑山':'みなみみどりやま','アリウムの丘':'ありうむのおか','二水':'ふたみず','栄浜':'さかえはま',
+  '平井湖':'ひらいこ','緑電高嶺':'りょくでんたかね','大平山':'おおひらやま','白ヶ峰海岸':'しらがみねかいがん',
+  '南孤城':'みなみこじょう','孤城山麓':'こじょうさんろく','両江':'りょうこう','堀岩':'ほりいわ',
+  '高嶺':'たかね','高嶺港':'たかねこう','高嶺山麓':'たかねさんろく','南高嶺':'みなみたかね','高丘公園前':'たかおかこうえんまえ'
+};
+
+function furiganaHtml(name, display){
+  const reading = STATION_READING[name];
+  const extra = (display && display!==name) ? display.slice(name.length) : '';
+  const base = reading ? '<ruby>'+name+'<rt>'+reading+'</rt></ruby>' : name;
+  return base+extra;
 }
 
 function buildGraph(){
@@ -368,9 +360,7 @@ function buildStationIndex(){
   const map = {};
   LINES.forEach(line=>{
     line.stations.forEach(st=>{
-      if(!map[st.name]){
-        map[st.name] = {name:st.name, display:st.display||st.name, lines:[], codes:[]};
-      }
+      if(!map[st.name]){ map[st.name] = {name:st.name, display:st.display||st.name, lines:[], codes:[]}; }
       map[st.name].lines.push(line.id);
       if(st.code) map[st.name].codes.push(st.code);
     });
@@ -392,8 +382,8 @@ function buildStationInfo(){
       else if(line.loop) next = line.stations[0];
       map[st.name].entries.push({
         lineId:line.id, lineName:line.name, code:st.code,
-        prev: prev ? (prev.display||prev.name) : null,
-        next: next ? (next.display||next.name) : null
+        prevName: prev ? prev.name : null, prevDisplay: prev ? (prev.display||prev.name) : null,
+        nextName: next ? next.name : null, nextDisplay: next ? (next.display||next.name) : null
       });
     });
   });
@@ -461,16 +451,15 @@ function dijkstraScalar(adj, nodeIds, start, target, mode){
   return {path, edgesUsed, cost:dist[target]};
 }
 
-function buildQueryGraph(startName, endName, avoidLineId){
+function buildQueryGraph(startName, endName, avoidLineIds){
   const adj = cloneAdj(GRAPH.adj);
-  if(avoidLineId){
-    Object.values(GRAPH.nodes).forEach(nd=>{
-      if(nd.lineId===avoidLineId){ removeNode(adj, nd.id); }
-    });
+  const avoidSet = new Set(avoidLineIds||[]);
+  if(avoidSet.size>0){
+    Object.values(GRAPH.nodes).forEach(nd=>{ if(avoidSet.has(nd.lineId)){ removeNode(adj, nd.id); } });
   }
   adj['__start__']=[]; adj['__end__']=[];
   Object.values(GRAPH.nodes).forEach(nd=>{
-    if(avoidLineId && nd.lineId===avoidLineId) return;
+    if(avoidSet.has(nd.lineId)) return;
     if(nd.name===startName){
       adj['__start__'].push({to:nd.id,type:'virtual',cost:0});
       adj[nd.id].push({to:'__start__',type:'virtual',cost:0});
@@ -483,8 +472,8 @@ function buildQueryGraph(startName, endName, avoidLineId){
   return adj;
 }
 
-function yenKShortest(startName, endName, K, mode, avoidLineId){
-  const baseAdj = buildQueryGraph(startName, endName, avoidLineId);
+function yenKShortest(startName, endName, K, mode, avoidLineIds){
+  const baseAdj = buildQueryGraph(startName, endName, avoidLineIds);
   const nodeIds = Object.keys(baseAdj);
   const first = dijkstraScalar(baseAdj, nodeIds, '__start__', '__end__', mode);
   if(!first) return [];
@@ -556,35 +545,29 @@ function itinerarySignature(legs){
   }).join('|');
 }
 
-function matchesExpressFilter(legs){
-  return legs.every(l=>{
-    if(!l.ride) return true;
-    if(l.stations.length<2) return true;
-    const ld = lineDef(l.lineId);
-    const stopsList = ld.rapid || ld.express;
-    if(!stopsList) return true;
-    const from = l.stations[0], to = l.stations[l.stations.length-1];
-    return from.code && to.code && stopsList.includes(from.code) && stopsList.includes(to.code);
-  });
+function isValidItinerary(legs){
+  return !legs.some(l=>l.ride && l.stations.length<2);
 }
 
-function doDirectSearch(fromName, toName, mode, avoidLineId, K){
-  const raw = yenKShortest(fromName, toName, K||12, mode, avoidLineId);
+function doDirectSearch(fromName, toName, mode, avoidLineIds, K){
+  const raw = yenKShortest(fromName, toName, K||20, mode, avoidLineIds);
   return raw.map(r=>{
     const legs = pathToItinerary(r.path, r.edgesUsed);
     return {legs, cost:r.cost, sig:itinerarySignature(legs)};
-  });
+  }).filter(c=>isValidItinerary(c.legs));
 }
 
-function doViaSearch(fromName, viaName, toName, mode, avoidLineId){
-  const seg1raw = yenKShortest(fromName, viaName, 6, mode, avoidLineId);
-  const seg2raw = yenKShortest(viaName, toName, 6, mode, avoidLineId);
+function doViaSearch(fromName, viaName, toName, mode, avoidLineIds){
+  const seg1raw = yenKShortest(fromName, viaName, 10, mode, avoidLineIds);
+  const seg2raw = yenKShortest(viaName, toName, 10, mode, avoidLineIds);
   if(seg1raw.length===0 || seg2raw.length===0) return [];
   const combos = [];
   seg1raw.forEach(s1=>{
+    const legs1 = pathToItinerary(s1.path, s1.edgesUsed);
+    if(!isValidItinerary(legs1)) return;
     seg2raw.forEach(s2=>{
-      const legs1 = pathToItinerary(s1.path, s1.edgesUsed);
       const legs2 = pathToItinerary(s2.path, s2.edgesUsed);
+      if(!isValidItinerary(legs2)) return;
       const lastLeg1 = legs1[legs1.length-1];
       const firstLeg2 = legs2[0];
       const lastNode = lastLeg1.stations[lastLeg1.stations.length-1];
@@ -595,6 +578,10 @@ function doViaSearch(fromName, viaName, toName, mode, avoidLineId){
     });
   });
   return combos;
+}
+
+function stNameHtml(node){
+  return furiganaHtml(node.name, node.display) + (node.code ? ' <span class="codeBadge">'+node.code+'</span>' : '');
 }
 
 function renderOneCandidateHtml(labelText, legs, transfers, stops){
@@ -625,16 +612,16 @@ function renderOneCandidateHtml(labelText, legs, transfers, stops){
       html += '<div class="rideBlock">';
       html += '<div class="trackCol"><span class="dot" style="border-color:var(--'+leg.lineId+')"></span><span class="track" style="background:var(--'+leg.lineId+')"></span><span class="dot" style="border-color:var(--'+leg.lineId+')"></span></div>';
       html += '<div class="rideInfo">';
-      html += '<div class="stName" onclick="showStationInfo(\''+from.name+'\')">'+from.display+(from.code?' <span class="codeBadge">'+from.code+'</span>':'')+'</div>';
+      html += '<div class="stName" onclick="showStationInfo(\''+from.name+'\')">'+stNameHtml(from)+'</div>';
       html += '<div class="lineTag" style="background:var(--'+leg.lineId+')">'+ld.name+(dirNote?'（'+dirNote+'）':'')+'　'+stopCount+'駅'+(note?'　'+note:'')+'</div>';
-      html += '<div class="stName" onclick="showStationInfo(\''+to.name+'\')">'+to.display+(to.code?' <span class="codeBadge">'+to.code+'</span>':'')+'</div>';
+      html += '<div class="stName" onclick="showStationInfo(\''+to.name+'\')">'+stNameHtml(to)+'</div>';
       html += '</div></div>';
     } else {
       let ico='⇄', text='';
-      if(leg.type==='through'){ ico='➡'; text=leg.from.display+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'; }
-      else if(leg.type==='walk'){ ico='🚶'; text=leg.from.display+' → '+leg.to.display+'　徒歩'+getWalkMinutes(leg.from.name,leg.to.name)+'分乗り換え'; }
-      else if(leg.type==='via'){ ico='📍'; text='経由：'+leg.from.display+'駅を通過'; }
-      else { ico='⇄'; text=leg.from.display+'駅で'+leg.to.lineName+'に乗り換え'; }
+      if(leg.type==='through'){ ico='➡'; text=furiganaHtml(leg.from.name,leg.from.display)+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'; }
+      else if(leg.type==='walk'){ ico='🚶'; text=furiganaHtml(leg.from.name,leg.from.display)+' → '+furiganaHtml(leg.to.name,leg.to.display)+'　徒歩'+getWalkMinutes(leg.from.name,leg.to.name)+'分乗り換え'; }
+      else if(leg.type==='via'){ ico='📍'; text='経由：'+furiganaHtml(leg.from.name,leg.from.display)+'駅を通過'; }
+      else { ico='⇄'; text=furiganaHtml(leg.from.name,leg.from.display)+'駅で'+leg.to.lineName+'に乗り換え'; }
       html += '<div class="transferRow"><div class="icoCol"><div class="ico">'+ico+'</div></div><div class="txt">'+text+'</div></div>';
     }
   });
@@ -705,8 +692,8 @@ function renderHistory(){
   const chips = hist.map(h=>{
     const fs = STATIONS.find(s=>s.name===h.from);
     const ts = STATIONS.find(s=>s.name===h.to);
-    const fd = fs?fs.display:h.from;
-    const td = ts?ts.display:h.to;
+    const fd = fs?furiganaHtml(fs.name,fs.display):h.from;
+    const td = ts?furiganaHtml(ts.name,ts.display):h.to;
     return '<div class="legendItem" onclick="rerunHistory(\''+h.from+'\',\''+h.to+'\')">'+fd+' → '+td+'</div>';
   }).join('');
   panel.innerHTML = '<div class="legendTitle">検索履歴</div><div class="legendGrid">'+chips+'</div>';
@@ -722,6 +709,19 @@ function rerunHistory(fromName, toName){
   doSearch();
 }
 
+function normalizeCode(code){
+  const m = code.match(/^([A-Za-z\-]*)0*(\d+)$/);
+  if(m) return (m[1]||'').toUpperCase() + parseInt(m[2],10);
+  return code.toUpperCase();
+}
+
+function isRealStationExact(text){
+  if(!text) return false;
+  if(STATIONS.some(s=>s.display===text || s.name===text)) return true;
+  const tn = normalizeCode(text);
+  return STATIONS.some(s=>s.codes.some(c=>normalizeCode(c)===tn));
+}
+
 function doSearch(){
   const fromInput = document.getElementById('fromInput');
   const toInput = document.getElementById('toInput');
@@ -729,18 +729,18 @@ function doSearch(){
   const fromRaw = fromInput.value.trim();
   const toRaw = toInput.value.trim();
   const viaRaw = viaInput.value.trim();
-  const fromName = resolveStation(fromInput);
-  const toName = resolveStation(toInput);
   const resultEl = document.getElementById('result');
 
   if(!fromRaw || !toRaw){
     resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅・到着駅を入力してください。</div></div>';
     return;
   }
-  if(hiddenMode && (!fromName || !toName)){
+  if(hiddenMode && (!isRealStationExact(fromRaw) || !isRealStationExact(toRaw))){
     renderFakeRoute(fromRaw, toRaw);
     return;
   }
+  const fromName = resolveStation(fromInput);
+  const toName = resolveStation(toInput);
   if(!fromName || !toName){
     resultEl.innerHTML = '<div class="resultCard"><div class="msg">出発駅・到着駅を候補から選択してください。</div></div>';
     return;
@@ -751,8 +751,7 @@ function doSearch(){
   }
 
   const mode = document.querySelector('input[name="searchMode"]:checked').value;
-  const avoidLineId = document.getElementById('avoidLineSelect').value || null;
-  const expressOnly = document.getElementById('expressOnlyToggle').checked;
+  const avoidLineIds = Array.from(document.querySelectorAll('.avoidLineCheck:checked')).map(el=>el.value);
 
   let candidates;
   if(viaRaw){
@@ -761,20 +760,17 @@ function doSearch(){
       resultEl.innerHTML = '<div class="resultCard"><div class="msg">経由駅を候補から選択してください。</div></div>';
       return;
     }
-    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineId);
+    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineIds);
   } else {
-    candidates = doDirectSearch(fromName, toName, mode, avoidLineId, 12);
+    candidates = doDirectSearch(fromName, toName, mode, avoidLineIds, 20);
   }
 
   candidates.sort((a,b)=>a.cost-b.cost);
-  if(expressOnly){ candidates = candidates.filter(c=>matchesExpressFilter(c.legs)); }
   const seen = new Set(); const unique=[];
   candidates.forEach(c=>{ if(!seen.has(c.sig)){ seen.add(c.sig); unique.push(c); } });
   const top = unique.slice(0,3);
   if(top.length===0){
-    let msg = '経路が見つかりませんでした。';
-    if(avoidLineId) msg = '指定した路線を避けると経路が見つかりませんでした。';
-    if(expressOnly) msg = '快速・急行のみでは経路が見つかりませんでした。';
+    const msg = avoidLineIds.length>0 ? '指定した路線を避けると経路が見つかりませんでした。' : '経路が見つかりませんでした。';
     resultEl.innerHTML = '<div class="resultCard"><div class="msg">'+msg+'</div></div>';
     return;
   }
@@ -794,11 +790,13 @@ function renderLegend(){
 }
 renderLegend();
 
-function populateAvoidLineSelect(){
-  const sel = document.getElementById('avoidLineSelect');
-  sel.innerHTML = '<option value="">指定しない</option>' + LINES.map(l=>'<option value="'+l.id+'">'+l.name+'</option>').join('');
+function populateAvoidLineGrid(){
+  const el = document.getElementById('avoidLineGrid');
+  el.innerHTML = LINES.map(l=>
+    '<label class="avoidLabel"><input type="checkbox" class="avoidLineCheck" value="'+l.id+'"><span class="sw" style="background:var(--'+l.id+')"></span>'+l.name+'</label>'
+  ).join('');
 }
-populateAvoidLineSelect();
+populateAvoidLineGrid();
 
 function setupAutocomplete(inputId, boxId){
   const input = document.getElementById(inputId);
@@ -806,14 +804,15 @@ function setupAutocomplete(inputId, boxId){
   function filterStations(q){
     if(!q) return [];
     const qu = q.toUpperCase();
-    return STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q) || s.codes.some(c=>c.toUpperCase().includes(qu))).slice(0,10);
+    const qn = normalizeCode(q);
+    return STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q) || s.codes.some(c=>c.toUpperCase().includes(qu) || normalizeCode(c)===qn)).slice(0,10);
   }
   function renderBox(list){
     if(list.length===0){ box.classList.remove('show'); box.innerHTML=''; return; }
     box.innerHTML = list.map(s=>{
       const dots = s.lines.map(lid=>'<span style="background:var(--'+lid+')"></span>').join('');
       const codeHint = s.codes.length ? '<span class="codeHint">'+s.codes.join('/')+'</span>' : '';
-      return '<div class="suggestItem" data-name="'+s.name+'" data-display="'+s.display+'"><span class="nm">'+s.display+codeHint+'</span><span class="dots">'+dots+'</span></div>';
+      return '<div class="suggestItem" data-name="'+s.name+'" data-display="'+s.display+'"><span class="nm">'+furiganaHtml(s.name,s.display)+codeHint+'</span><span class="dots">'+dots+'</span></div>';
     }).join('');
     box.classList.add('show');
   }
@@ -849,7 +848,8 @@ function resolveStation(input){
   }
   const exact = STATIONS.find(s=>s.display===val || s.name===val);
   if(exact) return exact.name;
-  const byCode = STATIONS.find(s=>s.codes.some(c=>c.toUpperCase()===val.toUpperCase()));
+  const valNorm = normalizeCode(val);
+  const byCode = STATIONS.find(s=>s.codes.some(c=>normalizeCode(c)===valNorm));
   if(byCode) return byCode.name;
   const partial = STATIONS.filter(s=>s.display.includes(val) || s.name.includes(val));
   if(partial.length>0) return partial[0].name;
@@ -875,10 +875,12 @@ function showStationInfo(name){
   const info = STATION_INFO[name];
   if(!info) return;
   let html = '<div class="modalBackdrop" id="modalBackdrop" onclick="if(event.target.id===\'modalBackdrop\')closeModal()"><div class="modalPanel">';
-  html += '<div class="modalHead"><div class="modalTitle">'+info.display+'</div><button class="modalClose" onclick="closeModal()">×</button></div>';
+  html += '<div class="modalHead"><div class="modalTitle">'+furiganaHtml(name,info.display)+'</div><button class="modalClose" onclick="closeModal()">×</button></div>';
   info.entries.forEach(e=>{
     html += '<div class="infoLine"><span class="infoLineBadge" style="background:var(--'+e.lineId+')">'+e.lineName+(e.code?'　'+e.code:'')+'</span>';
-    html += '<div class="infoAdj">◀ '+(e.prev||'（始発）')+'　|　'+(e.next||'（終着）')+' ▶</div></div>';
+    const prevHtml = e.prevName ? furiganaHtml(e.prevName,e.prevDisplay) : '（始発）';
+    const nextHtml = e.nextName ? furiganaHtml(e.nextName,e.nextDisplay) : '（終着）';
+    html += '<div class="infoAdj">◀ '+prevHtml+'　|　'+nextHtml+' ▶</div></div>';
   });
   html += '</div></div>';
   document.getElementById('modalRoot').innerHTML = html;
@@ -894,16 +896,16 @@ function showLineInfo(lineId){
     html += '<span>環状線</span>';
   } else {
     const first = line.stations[0], last = line.stations[line.stations.length-1];
-    html += '<span>始発：'+(first.display||first.name)+'</span><span>終着：'+(last.display||last.name)+'</span>';
+    html += '<span>始発：'+furiganaHtml(first.name, first.display||first.name)+'</span><span>終着：'+furiganaHtml(last.name, last.display||last.name)+'</span>';
   }
   html += '</div>';
   line.stations.forEach(st=>{
     const display = st.display||st.name;
-    html += '<div class="lineStationRow" onclick="showStationInfo(\''+st.name+'\')"><span class="lineStationCode">'+(st.code||'')+'</span><span class="lineStationName">'+display+'</span></div>';
+    html += '<div class="lineStationRow" onclick="showStationInfo(\''+st.name+'\')"><span class="lineStationCode">'+(st.code||'')+'</span><span class="lineStationName">'+furiganaHtml(st.name,display)+'</span></div>';
   });
   if(line.loop){
     const first = line.stations[0];
-    html += '<div class="loopNote">※環状線のため '+(first.display||first.name)+' に戻ります</div>';
+    html += '<div class="loopNote">※環状線のため '+furiganaHtml(first.name, first.display||first.name)+' に戻ります</div>';
   }
   html += '</div></div>';
   document.getElementById('modalRoot').innerHTML = html;
@@ -918,7 +920,11 @@ function showStationList(sortMode){
       return ca.localeCompare(cb);
     });
   } else {
-    list.sort((a,b)=>a.display.localeCompare(b.display,'ja'));
+    list.sort((a,b)=>{
+      const ra = STATION_READING[a.name] || a.display;
+      const rb = STATION_READING[b.name] || b.display;
+      return ra.localeCompare(rb,'ja');
+    });
   }
   let html = '<div class="modalBackdrop" id="modalBackdrop" onclick="if(event.target.id===\'modalBackdrop\')closeModal()"><div class="modalPanel">';
   html += '<div class="modalHead"><div class="modalTitle">全駅一覧（全'+list.length+'駅）</div><button class="modalClose" onclick="closeModal()">×</button></div>';
@@ -928,7 +934,7 @@ function showStationList(sortMode){
   html += '</div>';
   list.forEach(s=>{
     const codeText = s.codes.length ? s.codes.join(' / ') : '－';
-    html += '<div class="lineStationRow" onclick="showStationInfo(\''+s.name+'\')"><span class="lineStationCode">'+codeText+'</span><span class="lineStationName">'+s.display+'</span></div>';
+    html += '<div class="lineStationRow" onclick="showStationInfo(\''+s.name+'\')"><span class="lineStationCode">'+codeText+'</span><span class="lineStationName">'+furiganaHtml(s.name,s.display)+'</span></div>';
   });
   html += '</div></div>';
   document.getElementById('modalRoot').innerHTML = html;
@@ -951,20 +957,22 @@ function computeExtremeRoutes(){
       bestBothRec = {stops, transfers, path:path.slice(), edgesUsed:edgesUsed.slice()};
     }
   }
-  function dfs(current, visited, path, edgesUsed, stops, transfers){
+  function dfs(current, visited, path, edgesUsed, stops, transfers, lastWasNonRide){
     consider(path, edgesUsed, stops, transfers);
     GRAPH.adj[current].forEach(e=>{
       if(visited.has(e.to)) return;
+      const isNonRide = e.type!=='ride';
+      if(lastWasNonRide && isNonRide) return;
       visited.add(e.to);
       path.push(e.to);
       edgesUsed.push({from:current, to:e.to, type:e.type, cost:e.cost});
-      const addT = (e.type==='transfer'||e.type==='walk') ? 1 : 0;
+      const addT = isNonRide ? 1 : 0;
       const addS = e.type==='ride' ? e.cost : 0;
-      dfs(e.to, visited, path, edgesUsed, stops+addS, transfers+addT);
+      dfs(e.to, visited, path, edgesUsed, stops+addS, transfers+addT, isNonRide);
       path.pop(); edgesUsed.pop(); visited.delete(e.to);
     });
   }
-  nodeIds.forEach(startId=>{ dfs(startId, new Set([startId]), [startId], [], 0, 0); });
+  nodeIds.forEach(startId=>{ dfs(startId, new Set([startId]), [startId], [], 0, 0, false); });
   function toResult(rec){
     return {legs:buildItinerary(GRAPH.nodes, rec.path, rec.edgesUsed), stops:rec.stops, transfers:rec.transfers};
   }
