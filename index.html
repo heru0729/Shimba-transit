@@ -312,7 +312,7 @@ const STATION_READING = {
   '高嶺':'たかね','高嶺港':'たかねこう','高嶺山麓':'たかねさんろく','南高嶺':'みなみたかね','高丘公園前':'たかおかこうえんまえ'
 };
 
-const ROMAJI_MAP = {
+const ROMAJI_MAP_HEPBURN = {
   'きゃ':'kya','きゅ':'kyu','きょ':'kyo','しゃ':'sha','しゅ':'shu','しょ':'sho',
   'ちゃ':'cha','ちゅ':'chu','ちょ':'cho','にゃ':'nya','にゅ':'nyu','にょ':'nyo',
   'ひゃ':'hya','ひゅ':'hyu','ひょ':'hyo','みゃ':'mya','みゅ':'myu','みょ':'myo',
@@ -335,30 +335,42 @@ const ROMAJI_MAP = {
   'ば':'ba','び':'bi','ぶ':'bu','べ':'be','ぼ':'bo',
   'ぱ':'pa','ぴ':'pi','ぷ':'pu','ぺ':'pe','ぽ':'po'
 };
-function hiraganaToRomaji(str){
+const ROMAJI_MAP_KUNREI = Object.assign({}, ROMAJI_MAP_HEPBURN, {
+  'し':'si','しゃ':'sya','しゅ':'syu','しょ':'syo',
+  'ち':'ti','ちゃ':'tya','ちゅ':'tyu','ちょ':'tyo',
+  'つ':'tu','ふ':'hu',
+  'じ':'zi','じゃ':'zya','じゅ':'zyu','じょ':'zyo','ぢ':'zi'
+});
+function hiraganaToRomajiUsing(str, map){
   let result = '';
   let i = 0;
   while(i<str.length){
     const ch = str[i];
     if(ch==='っ'){
       let nextRomaji = '';
-      if(i+2<str.length && ROMAJI_MAP[str.slice(i+1,i+3)]){ nextRomaji = ROMAJI_MAP[str.slice(i+1,i+3)]; }
-      else if(ROMAJI_MAP[str[i+1]]){ nextRomaji = ROMAJI_MAP[str[i+1]]; }
+      if(i+2<str.length && map[str.slice(i+1,i+3)]){ nextRomaji = map[str.slice(i+1,i+3)]; }
+      else if(map[str[i+1]]){ nextRomaji = map[str[i+1]]; }
       if(nextRomaji && nextRomaji[0]!=='n'){ result += nextRomaji[0]; }
       i++;
       continue;
     }
     if(i+1<str.length){
       const two = str.slice(i,i+2);
-      if(ROMAJI_MAP[two]){ result += ROMAJI_MAP[two]; i+=2; continue; }
+      if(map[two]){ result += map[two]; i+=2; continue; }
     }
-    result += ROMAJI_MAP[ch] || ch;
+    result += map[ch] || ch;
     i++;
   }
   return result;
 }
+function hiraganaToRomaji(str){ return hiraganaToRomajiUsing(str, ROMAJI_MAP_HEPBURN); }
+function hiraganaToRomajiKunrei(str){ return hiraganaToRomajiUsing(str, ROMAJI_MAP_KUNREI); }
 const STATION_ROMAJI = {};
-Object.keys(STATION_READING).forEach(name=>{ STATION_ROMAJI[name] = hiraganaToRomaji(STATION_READING[name]); });
+const STATION_ROMAJI_KUNREI = {};
+Object.keys(STATION_READING).forEach(name=>{
+  STATION_ROMAJI[name] = hiraganaToRomaji(STATION_READING[name]);
+  STATION_ROMAJI_KUNREI[name] = hiraganaToRomajiKunrei(STATION_READING[name]);
+});
 
 function furiganaHtml(name, display){
   const reading = STATION_READING[name];
@@ -700,12 +712,22 @@ function renderOneCandidateHtml(labelText, legs, transfers, stops){
   return html;
 }
 
-function renderCandidates(list, mode){
-  const resultEl = document.getElementById('result');
-  resultEl.innerHTML = list.map((cand,idx)=>{
+function renderCandidatesHtml(list, mode){
+  return list.map((cand,idx)=>{
     const dc = decodeCost(cand.cost, mode);
     return renderOneCandidateHtml('経路'+(idx+1)+(idx===0?'（おすすめ）':''), cand.legs, dc.transfers, dc.stops);
   }).join('');
+}
+
+function renderWalkOnlyCard(fromName, toName, minutes){
+  const fromSt = STATIONS.find(s=>s.name===fromName);
+  const toSt = STATIONS.find(s=>s.name===toName);
+  let html = '<div class="resultCard">';
+  html += '<div class="candidateLabel">徒歩ルート</div>';
+  html += '<div class="summaryBar"><div class="box"><div class="num">'+minutes+'分</div><div class="lbl">徒歩時間</div></div></div>';
+  html += '<div class="transferRow"><div class="icoCol"><div class="ico">🚶</div></div><div class="txt">'+furiganaHtml(fromName, fromSt?fromSt.display:fromName)+' → '+furiganaHtml(toName, toSt?toSt.display:toName)+'　徒歩'+minutes+'分</div></div>';
+  html += '</div>';
+  return html;
 }
 
 let hiddenMode = false;
@@ -890,7 +912,9 @@ function doSearch(){
     return;
   }
   addHistory(fromName, toName);
-  renderCandidates(top, mode);
+  const directWalk = !viaRaw ? EXTRA_TRANSFERS.find(e=>(e.nameA===fromName && e.nameB===toName) || (e.nameA===toName && e.nameB===fromName)) : null;
+  const walkHtml = directWalk ? renderWalkOnlyCard(fromName, toName, directWalk.minutes) : '';
+  resultEl.innerHTML = walkHtml + renderCandidatesHtml(top, mode);
 }
 
 function renderLegend(){
@@ -930,9 +954,11 @@ function levenshtein(a, b){
 function fuzzyDistance(query, s){
   const reading = STATION_READING[s.name] || '';
   const romaji = STATION_ROMAJI[s.name] || '';
+  const romajiKunrei = STATION_ROMAJI_KUNREI[s.name] || '';
   const dists = [levenshtein(query, s.name), levenshtein(query, s.display)];
   if(reading) dists.push(levenshtein(query, reading));
   if(romaji) dists.push(levenshtein(query.toLowerCase(), romaji));
+  if(romajiKunrei) dists.push(levenshtein(query.toLowerCase(), romajiKunrei));
   return Math.min(...dists);
 }
 
@@ -943,7 +969,7 @@ function setupAutocomplete(inputId, boxId){
     if(!q) return [];
     const qu = q.toUpperCase();
     const qn = normalizeCode(q);
-    const exact = STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q) || (STATION_READING[s.name]||'').includes(q) || (STATION_ROMAJI[s.name]||'').includes(q.toLowerCase()) || s.codes.some(c=>c.toUpperCase().includes(qu) || normalizeCode(c)===qn));
+    const exact = STATIONS.filter(s=>s.display.includes(q) || s.name.includes(q) || (STATION_READING[s.name]||'').includes(q) || (STATION_ROMAJI[s.name]||'').includes(q.toLowerCase()) || (STATION_ROMAJI_KUNREI[s.name]||'').includes(q.toLowerCase()) || s.codes.some(c=>c.toUpperCase().includes(qu) || normalizeCode(c)===qn));
     if(exact.length>=5) return exact.slice(0,10).map(s=>({s, fuzzy:false}));
     const exactNames = new Set(exact.map(s=>s.name));
     const threshold = q.length<=2 ? 1 : 2;
@@ -995,12 +1021,12 @@ function resolveStation(input){
     const st = STATIONS.find(s=>s.name===input.dataset.value);
     if(st && st.display===val) return st.name;
   }
-  const exact = STATIONS.find(s=>s.display===val || s.name===val || STATION_READING[s.name]===val || STATION_ROMAJI[s.name]===val.toLowerCase());
+  const exact = STATIONS.find(s=>s.display===val || s.name===val || STATION_READING[s.name]===val || STATION_ROMAJI[s.name]===val.toLowerCase() || STATION_ROMAJI_KUNREI[s.name]===val.toLowerCase());
   if(exact) return exact.name;
   const valNorm = normalizeCode(val);
   const byCode = STATIONS.find(s=>s.codes.some(c=>normalizeCode(c)===valNorm));
   if(byCode) return byCode.name;
-  const partial = STATIONS.filter(s=>s.display.includes(val) || s.name.includes(val) || (STATION_READING[s.name]||'').includes(val) || (STATION_ROMAJI[s.name]||'').includes(val.toLowerCase()));
+  const partial = STATIONS.filter(s=>s.display.includes(val) || s.name.includes(val) || (STATION_READING[s.name]||'').includes(val) || (STATION_ROMAJI[s.name]||'').includes(val.toLowerCase()) || (STATION_ROMAJI_KUNREI[s.name]||'').includes(val.toLowerCase()));
   if(partial.length>0) return partial[0].name;
   const threshold = val.length<=2 ? 1 : 2;
   let best = null, bestD = Infinity;
