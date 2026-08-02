@@ -631,6 +631,33 @@ function isValidItinerary(legs){
   return !legs.some(l=>l.ride && l.stations.length<2);
 }
 
+function usesIrregularThrough(legs){
+  return legs.some(l=>!l.ride && l.type==='through' &&
+    ((l.from.name==='初野' && l.to.name==='東檸檬') || (l.from.name==='東檸檬' && l.to.name==='初野')));
+}
+function muchWorseWithout(normalDecoded, irregularDecoded, mode){
+  if(mode==='distance'){
+    return (normalDecoded.stops - irregularDecoded.stops) >= 10;
+  }
+  return (normalDecoded.transfers - irregularDecoded.transfers) >= 2 || (normalDecoded.stops - irregularDecoded.stops) >= 10;
+}
+function orderWithIrregularPenalty(unique, mode){
+  const irregularOnes = unique.filter(c=>usesIrregularThrough(c.legs));
+  const normalOnes = unique.filter(c=>!usesIrregularThrough(c.legs));
+  if(irregularOnes.length===0) return unique;
+  if(normalOnes.length===0) return irregularOnes;
+  const bestNormalDec = decodeCost(normalOnes[0].cost, mode);
+  const bestIrregularDec = decodeCost(irregularOnes[0].cost, mode);
+  if(muchWorseWithout(bestNormalDec, bestIrregularDec, mode)){
+    const rest = normalOnes.concat(irregularOnes.slice(1));
+    rest.sort((a,b)=>a.cost-b.cost);
+    return [irregularOnes[0]].concat(rest);
+  }
+  const rest = normalOnes.slice(1).concat(irregularOnes);
+  rest.sort((a,b)=>a.cost-b.cost);
+  return [normalOnes[0]].concat(rest);
+}
+
 function doDirectSearch(fromName, toName, mode, avoidLineIds, K, avoidWalk){
   const raw = yenKShortest(fromName, toName, K||20, mode, avoidLineIds, avoidWalk);
   return raw.map(r=>{
@@ -708,7 +735,11 @@ function renderOneCandidateHtml(labelText, legs, transfers, stops){
       html += '</div></div>';
     } else {
       let ico='⇄', text='';
-      if(leg.type==='through'){ ico='➡'; text=furiganaHtml(leg.from.name,leg.from.display)+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'; }
+      if(leg.type==='through'){
+        ico='➡';
+        const isIrregular = (leg.from.name==='初野' && leg.to.name==='東檸檬') || (leg.from.name==='東檸檬' && leg.to.name==='初野');
+        text=furiganaHtml(leg.from.name,leg.from.display)+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'+(isIrregular?'　※不定期運行':'');
+      }
       else if(leg.type==='walk'){ ico='🚶'; text=furiganaHtml(leg.from.name,leg.from.display)+' → '+furiganaHtml(leg.to.name,leg.to.display)+'　徒歩'+getWalkMinutes(leg.from.name,leg.to.name)+'分乗り換え'; }
       else if(leg.type==='via'){ ico='📍'; text='経由：'+furiganaHtml(leg.from.name,leg.from.display)+'駅を通過'; }
       else { ico='⇄'; text=furiganaHtml(leg.from.name,leg.from.display)+'駅で'+leg.to.lineName+'に乗り換え'; }
@@ -913,7 +944,8 @@ function doSearch(){
   candidates.sort((a,b)=>a.cost-b.cost);
   const seen = new Set(); const unique=[];
   candidates.forEach(c=>{ if(!seen.has(c.sig)){ seen.add(c.sig); unique.push(c); } });
-  const top = unique.slice(0,3);
+  const ordered = orderWithIrregularPenalty(unique, mode);
+  const top = ordered.slice(0,3);
   if(top.length===0){
     let msg = '経路が見つかりませんでした。';
     if(avoidLineIds.length>0) msg = '指定した路線を避けると経路が見つかりませんでした。';
