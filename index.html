@@ -192,6 +192,10 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
       <div class="optionLabel">避ける路線（複数選択可）</div>
       <div class="legendGrid" id="avoidLineGrid"></div>
     </div>
+    <div class="toggleRow">
+      <input type="checkbox" id="avoidWalkToggle">
+      <label for="avoidWalkToggle">徒歩連絡を使わない</label>
+    </div>
     <button id="searchBtn" type="button">この条件で検索</button>
     <button id="resetBtn" type="button">条件をリセット</button>
   </div>
@@ -293,7 +297,7 @@ const EXTRA_TRANSFERS = [
   {nameA:'新初野', nameB:'初野', minutes:1}
 ];
 const EXTRA_THROUGH = [
-  {nameA:'檸檬', nameB:'東檸檬'}
+  {nameA:'初野', nameB:'東檸檬'}
 ];
 function getWalkMinutes(nameA, nameB){
   const et = EXTRA_TRANSFERS.find(e=>(e.nameA===nameA && e.nameB===nameB) || (e.nameA===nameB && e.nameB===nameA));
@@ -526,11 +530,14 @@ function dijkstraScalar(adj, nodeIds, start, target, mode){
   return {path, edgesUsed, cost:dist[target]};
 }
 
-function buildQueryGraph(startName, endName, avoidLineIds){
+function buildQueryGraph(startName, endName, avoidLineIds, avoidWalk){
   const adj = cloneAdj(GRAPH.adj);
   const avoidSet = new Set(avoidLineIds||[]);
   if(avoidSet.size>0){
     Object.values(GRAPH.nodes).forEach(nd=>{ if(avoidSet.has(nd.lineId)){ removeNode(adj, nd.id); } });
+  }
+  if(avoidWalk){
+    Object.keys(adj).forEach(k=>{ adj[k] = adj[k].filter(e=>e.type!=='walk'); });
   }
   adj['__start__']=[]; adj['__end__']=[];
   Object.values(GRAPH.nodes).forEach(nd=>{
@@ -547,8 +554,8 @@ function buildQueryGraph(startName, endName, avoidLineIds){
   return adj;
 }
 
-function yenKShortest(startName, endName, K, mode, avoidLineIds){
-  const baseAdj = buildQueryGraph(startName, endName, avoidLineIds);
+function yenKShortest(startName, endName, K, mode, avoidLineIds, avoidWalk){
+  const baseAdj = buildQueryGraph(startName, endName, avoidLineIds, avoidWalk);
   const nodeIds = Object.keys(baseAdj);
   const first = dijkstraScalar(baseAdj, nodeIds, '__start__', '__end__', mode);
   if(!first) return [];
@@ -624,17 +631,17 @@ function isValidItinerary(legs){
   return !legs.some(l=>l.ride && l.stations.length<2);
 }
 
-function doDirectSearch(fromName, toName, mode, avoidLineIds, K){
-  const raw = yenKShortest(fromName, toName, K||20, mode, avoidLineIds);
+function doDirectSearch(fromName, toName, mode, avoidLineIds, K, avoidWalk){
+  const raw = yenKShortest(fromName, toName, K||20, mode, avoidLineIds, avoidWalk);
   return raw.map(r=>{
     const legs = pathToItinerary(r.path, r.edgesUsed);
     return {legs, cost:r.cost, sig:itinerarySignature(legs)};
   }).filter(c=>isValidItinerary(c.legs));
 }
 
-function doViaSearch(fromName, viaName, toName, mode, avoidLineIds){
-  const seg1raw = yenKShortest(fromName, viaName, 10, mode, avoidLineIds);
-  const seg2raw = yenKShortest(viaName, toName, 10, mode, avoidLineIds);
+function doViaSearch(fromName, viaName, toName, mode, avoidLineIds, avoidWalk){
+  const seg1raw = yenKShortest(fromName, viaName, 10, mode, avoidLineIds, avoidWalk);
+  const seg2raw = yenKShortest(viaName, toName, 10, mode, avoidLineIds, avoidWalk);
   if(seg1raw.length===0 || seg2raw.length===0) return [];
   const combos = [];
   seg1raw.forEach(s1=>{
@@ -889,6 +896,7 @@ function doSearch(){
 
   const mode = document.querySelector('input[name="searchMode"]:checked').value;
   const avoidLineIds = Array.from(document.querySelectorAll('.avoidLineCheck:checked')).map(el=>el.value);
+  const avoidWalk = document.getElementById('avoidWalkToggle').checked;
 
   let candidates;
   if(viaRaw){
@@ -897,9 +905,9 @@ function doSearch(){
       resultEl.innerHTML = '<div class="resultCard"><div class="msg">経由駅を候補から選択してください。</div></div>';
       return;
     }
-    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineIds);
+    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineIds, avoidWalk);
   } else {
-    candidates = doDirectSearch(fromName, toName, mode, avoidLineIds, 20);
+    candidates = doDirectSearch(fromName, toName, mode, avoidLineIds, 20, avoidWalk);
   }
 
   candidates.sort((a,b)=>a.cost-b.cost);
@@ -907,12 +915,14 @@ function doSearch(){
   candidates.forEach(c=>{ if(!seen.has(c.sig)){ seen.add(c.sig); unique.push(c); } });
   const top = unique.slice(0,3);
   if(top.length===0){
-    const msg = avoidLineIds.length>0 ? '指定した路線を避けると経路が見つかりませんでした。' : '経路が見つかりませんでした。';
+    let msg = '経路が見つかりませんでした。';
+    if(avoidLineIds.length>0) msg = '指定した路線を避けると経路が見つかりませんでした。';
+    if(avoidWalk) msg = '徒歩連絡を使わない条件では経路が見つかりませんでした。';
     resultEl.innerHTML = '<div class="resultCard"><div class="msg">'+msg+'</div></div>';
     return;
   }
   addHistory(fromName, toName);
-  const directWalk = !viaRaw ? EXTRA_TRANSFERS.find(e=>(e.nameA===fromName && e.nameB===toName) || (e.nameA===toName && e.nameB===fromName)) : null;
+  const directWalk = (!viaRaw && !avoidWalk) ? EXTRA_TRANSFERS.find(e=>(e.nameA===fromName && e.nameB===toName) || (e.nameA===toName && e.nameB===fromName)) : null;
   const walkHtml = directWalk ? renderWalkOnlyCard(fromName, toName, directWalk.minutes) : '';
   resultEl.innerHTML = walkHtml + renderCandidatesHtml(top, mode);
 }
@@ -1059,6 +1069,7 @@ function resetForm(){
   toInput.value=''; toInput.dataset.value='';
   viaInput.value=''; viaInput.dataset.value='';
   document.querySelectorAll('.avoidLineCheck').forEach(cb=>{ cb.checked=false; });
+  document.getElementById('avoidWalkToggle').checked = false;
   const defaultMode = document.querySelector('input[name="searchMode"][value="transfer"]');
   if(defaultMode) defaultMode.checked = true;
   document.getElementById('result').innerHTML = '';
