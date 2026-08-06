@@ -184,7 +184,8 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
     <div class="optionBlock">
       <div class="optionLabel">検索モード</div>
       <div class="radioRow">
-        <label><input type="radio" name="searchMode" value="transfer" checked> 乗り換え優先</label>
+        <label><input type="radio" name="searchMode" value="balanced" checked> 総合評価順</label>
+        <label><input type="radio" name="searchMode" value="transfer"> 乗り換え優先</label>
         <label><input type="radio" name="searchMode" value="distance"> 距離優先</label>
       </div>
     </div>
@@ -195,6 +196,10 @@ main{max-width:520px;margin:0 auto;padding:14px 12px;}
     <div class="toggleRow">
       <input type="checkbox" id="avoidWalkToggle">
       <label for="avoidWalkToggle">徒歩連絡を使わない</label>
+    </div>
+    <div class="toggleRow">
+      <input type="checkbox" id="irregularThroughToggle">
+      <label for="irregularThroughToggle">不定期直通（初野⇔東檸檬・新初野⇒檸檬）を使う</label>
     </div>
     <button id="searchBtn" type="button">この条件で検索</button>
     <button id="resetBtn" type="button">条件をリセット</button>
@@ -294,10 +299,12 @@ const EXTRA_TRANSFERS = [
   {nameA:'白ヶ峰海岸', nameB:'白ヶ峰高原', minutes:2},
   {nameA:'高嶺', nameB:'高嶺中央', minutes:1},
   {nameA:'南高嶺', nameB:'緑電高嶺', minutes:2},
-  {nameA:'新初野', nameB:'初野', minutes:1}
+  {nameA:'新初野', nameB:'初野', minutes:1},
+  {nameA:'孤城', nameB:'南孤城', minutes:2}
 ];
 const EXTRA_THROUGH = [
-  {nameA:'初野', nameB:'東檸檬'}
+  {nameA:'初野', nameB:'東檸檬'},
+  {nameA:'新初野', nameB:'檸檬', oneway:true}
 ];
 function getWalkMinutes(nameA, nameB){
   const et = EXTRA_TRANSFERS.find(e=>(e.nameA===nameA && e.nameB===nameB) || (e.nameA===nameB && e.nameB===nameA));
@@ -426,11 +433,6 @@ function buildGraph(){
     const b = Object.values(nodes).find(nd=>nd.name===et.nameB);
     addEdge(a.id, b.id, 'walk', 1);
   });
-  EXTRA_THROUGH.forEach(et=>{
-    const a = Object.values(nodes).find(nd=>nd.name===et.nameA);
-    const b = Object.values(nodes).find(nd=>nd.name===et.nameB);
-    addEdge(a.id, b.id, 'through', 0);
-  });
   return {nodes, adj};
 }
 const GRAPH = buildGraph();
@@ -491,17 +493,27 @@ function arraysEqual(a,b){
   return true;
 }
 function edgeWeight(e, mode){
-  const distMode = mode==='distance';
-  if(e.type==='ride') return distMode ? e.cost*1000 : e.cost;
-  if(e.type==='transfer' || e.type==='walk') return distMode ? 1 : 1000;
+  if(e.type==='ride'){
+    if(mode==='distance') return e.cost*1000;
+    return e.cost;
+  }
+  if(e.type==='transfer' || e.type==='walk'){
+    if(mode==='distance') return 1;
+    if(mode==='balanced') return 4;
+    return 1000;
+  }
   return 0;
 }
 function sumEdges(edges, mode){
   return edges.reduce((s,e)=>s+edgeWeight(e,mode),0);
 }
-function decodeCost(cost, mode){
-  if(mode==='distance') return {stops:Math.floor(cost/1000), transfers:cost%1000};
-  return {transfers:Math.floor(cost/1000), stops:cost%1000};
+function summarizeLegs(legs){
+  let stops=0, transfers=0;
+  legs.forEach(l=>{
+    if(l.ride){ if(l.stations.length>1) stops += l.stations.length-1; }
+    else if(l.type==='transfer' || l.type==='walk' || l.type==='via'){ transfers++; }
+  });
+  return {transfers, stops};
 }
 
 function dijkstraScalar(adj, nodeIds, start, target, mode){
@@ -530,7 +542,7 @@ function dijkstraScalar(adj, nodeIds, start, target, mode){
   return {path, edgesUsed, cost:dist[target]};
 }
 
-function buildQueryGraph(startName, endName, avoidLineIds, avoidWalk){
+function buildQueryGraph(startName, endName, avoidLineIds, avoidWalk, useIrregular){
   const adj = cloneAdj(GRAPH.adj);
   const avoidSet = new Set(avoidLineIds||[]);
   if(avoidSet.size>0){
@@ -538,6 +550,16 @@ function buildQueryGraph(startName, endName, avoidLineIds, avoidWalk){
   }
   if(avoidWalk){
     Object.keys(adj).forEach(k=>{ adj[k] = adj[k].filter(e=>e.type!=='walk'); });
+  }
+  if(useIrregular){
+    EXTRA_THROUGH.forEach(et=>{
+      const a = Object.values(GRAPH.nodes).find(nd=>nd.name===et.nameA);
+      const b = Object.values(GRAPH.nodes).find(nd=>nd.name===et.nameB);
+      if(a && b && adj[a.id] && adj[b.id]){
+        adj[a.id].push({to:b.id, type:'through', cost:0});
+        if(!et.oneway){ adj[b.id].push({to:a.id, type:'through', cost:0}); }
+      }
+    });
   }
   adj['__start__']=[]; adj['__end__']=[];
   Object.values(GRAPH.nodes).forEach(nd=>{
@@ -554,8 +576,8 @@ function buildQueryGraph(startName, endName, avoidLineIds, avoidWalk){
   return adj;
 }
 
-function yenKShortest(startName, endName, K, mode, avoidLineIds, avoidWalk){
-  const baseAdj = buildQueryGraph(startName, endName, avoidLineIds, avoidWalk);
+function yenKShortest(startName, endName, K, mode, avoidLineIds, avoidWalk, useIrregular){
+  const baseAdj = buildQueryGraph(startName, endName, avoidLineIds, avoidWalk, useIrregular);
   const nodeIds = Object.keys(baseAdj);
   const first = dijkstraScalar(baseAdj, nodeIds, '__start__', '__end__', mode);
   if(!first) return [];
@@ -628,47 +650,31 @@ function itinerarySignature(legs){
 }
 
 function isValidItinerary(legs){
-  return !legs.some(l=>l.ride && l.stations.length<2);
+  for(let i=0;i<legs.length;i++){
+    const l = legs[i];
+    if(l.ride && l.stations.length<2 && i>0 && i<legs.length-1){ return false; }
+  }
+  return true;
 }
 
-function usesIrregularThrough(legs){
-  return legs.some(l=>!l.ride && l.type==='through' &&
-    ((l.from.name==='初野' && l.to.name==='東檸檬') || (l.from.name==='東檸檬' && l.to.name==='初野')));
-}
-function muchWorseWithout(normalDecoded, irregularDecoded, mode){
-  if(mode==='distance'){
-    return (normalDecoded.stops - irregularDecoded.stops) >= 10;
-  }
-  return (normalDecoded.transfers - irregularDecoded.transfers) >= 2 || (normalDecoded.stops - irregularDecoded.stops) >= 10;
-}
-function orderWithIrregularPenalty(unique, mode){
-  const irregularOnes = unique.filter(c=>usesIrregularThrough(c.legs));
-  const normalOnes = unique.filter(c=>!usesIrregularThrough(c.legs));
-  if(irregularOnes.length===0) return unique;
-  if(normalOnes.length===0) return irregularOnes;
-  const bestNormalDec = decodeCost(normalOnes[0].cost, mode);
-  const bestIrregularDec = decodeCost(irregularOnes[0].cost, mode);
-  if(muchWorseWithout(bestNormalDec, bestIrregularDec, mode)){
-    const rest = normalOnes.concat(irregularOnes.slice(1));
-    rest.sort((a,b)=>a.cost-b.cost);
-    return [irregularOnes[0]].concat(rest);
-  }
-  const rest = normalOnes.slice(1).concat(irregularOnes);
-  rest.sort((a,b)=>a.cost-b.cost);
-  return [normalOnes[0]].concat(rest);
+function isIrregularThroughLeg(leg){
+  return EXTRA_THROUGH.some(et=>
+    (leg.from.name===et.nameA && leg.to.name===et.nameB) ||
+    (!et.oneway && leg.from.name===et.nameB && leg.to.name===et.nameA)
+  );
 }
 
-function doDirectSearch(fromName, toName, mode, avoidLineIds, K, avoidWalk){
-  const raw = yenKShortest(fromName, toName, K||20, mode, avoidLineIds, avoidWalk);
+function doDirectSearch(fromName, toName, mode, avoidLineIds, K, avoidWalk, useIrregular){
+  const raw = yenKShortest(fromName, toName, K||20, mode, avoidLineIds, avoidWalk, useIrregular);
   return raw.map(r=>{
     const legs = pathToItinerary(r.path, r.edgesUsed);
     return {legs, cost:r.cost, sig:itinerarySignature(legs)};
   }).filter(c=>isValidItinerary(c.legs));
 }
 
-function doViaSearch(fromName, viaName, toName, mode, avoidLineIds, avoidWalk){
-  const seg1raw = yenKShortest(fromName, viaName, 10, mode, avoidLineIds, avoidWalk);
-  const seg2raw = yenKShortest(viaName, toName, 10, mode, avoidLineIds, avoidWalk);
+function doViaSearch(fromName, viaName, toName, mode, avoidLineIds, avoidWalk, useIrregular){
+  const seg1raw = yenKShortest(fromName, viaName, 10, mode, avoidLineIds, avoidWalk, useIrregular);
+  const seg2raw = yenKShortest(viaName, toName, 10, mode, avoidLineIds, avoidWalk, useIrregular);
   if(seg1raw.length===0 || seg2raw.length===0) return [];
   const combos = [];
   seg1raw.forEach(s1=>{
@@ -737,7 +743,7 @@ function renderOneCandidateHtml(labelText, legs, transfers, stops){
       let ico='⇄', text='';
       if(leg.type==='through'){
         ico='➡';
-        const isIrregular = (leg.from.name==='初野' && leg.to.name==='東檸檬') || (leg.from.name==='東檸檬' && leg.to.name==='初野');
+        const isIrregular = isIrregularThroughLeg(leg);
         text=furiganaHtml(leg.from.name,leg.from.display)+'駅で'+leg.to.lineName+'へそのまま直通運転（乗り換え不要）'+(isIrregular?'　※不定期運行':'');
       }
       else if(leg.type==='walk'){ ico='🚶'; text=furiganaHtml(leg.from.name,leg.from.display)+' → '+furiganaHtml(leg.to.name,leg.to.display)+'　徒歩'+getWalkMinutes(leg.from.name,leg.to.name)+'分乗り換え'; }
@@ -750,9 +756,9 @@ function renderOneCandidateHtml(labelText, legs, transfers, stops){
   return html;
 }
 
-function renderCandidatesHtml(list, mode){
+function renderCandidatesHtml(list){
   return list.map((cand,idx)=>{
-    const dc = decodeCost(cand.cost, mode);
+    const dc = summarizeLegs(cand.legs);
     return renderOneCandidateHtml('経路'+(idx+1)+(idx===0?'（おすすめ）':''), cand.legs, dc.transfers, dc.stops);
   }).join('');
 }
@@ -928,6 +934,7 @@ function doSearch(){
   const mode = document.querySelector('input[name="searchMode"]:checked').value;
   const avoidLineIds = Array.from(document.querySelectorAll('.avoidLineCheck:checked')).map(el=>el.value);
   const avoidWalk = document.getElementById('avoidWalkToggle').checked;
+  const useIrregular = document.getElementById('irregularThroughToggle').checked;
 
   let candidates;
   if(viaRaw){
@@ -936,16 +943,15 @@ function doSearch(){
       resultEl.innerHTML = '<div class="resultCard"><div class="msg">経由駅を候補から選択してください。</div></div>';
       return;
     }
-    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineIds, avoidWalk);
+    candidates = doViaSearch(fromName, viaName, toName, mode, avoidLineIds, avoidWalk, useIrregular);
   } else {
-    candidates = doDirectSearch(fromName, toName, mode, avoidLineIds, 20, avoidWalk);
+    candidates = doDirectSearch(fromName, toName, mode, avoidLineIds, 20, avoidWalk, useIrregular);
   }
 
   candidates.sort((a,b)=>a.cost-b.cost);
   const seen = new Set(); const unique=[];
   candidates.forEach(c=>{ if(!seen.has(c.sig)){ seen.add(c.sig); unique.push(c); } });
-  const ordered = orderWithIrregularPenalty(unique, mode);
-  const top = ordered.slice(0,3);
+  const top = unique.slice(0,3);
   if(top.length===0){
     let msg = '経路が見つかりませんでした。';
     if(avoidLineIds.length>0) msg = '指定した路線を避けると経路が見つかりませんでした。';
@@ -956,7 +962,7 @@ function doSearch(){
   addHistory(fromName, toName);
   const directWalk = (!viaRaw && !avoidWalk) ? EXTRA_TRANSFERS.find(e=>(e.nameA===fromName && e.nameB===toName) || (e.nameA===toName && e.nameB===fromName)) : null;
   const walkHtml = directWalk ? renderWalkOnlyCard(fromName, toName, directWalk.minutes) : '';
-  resultEl.innerHTML = walkHtml + renderCandidatesHtml(top, mode);
+  resultEl.innerHTML = walkHtml + renderCandidatesHtml(top);
 }
 
 function renderLegend(){
@@ -1102,7 +1108,8 @@ function resetForm(){
   viaInput.value=''; viaInput.dataset.value='';
   document.querySelectorAll('.avoidLineCheck').forEach(cb=>{ cb.checked=false; });
   document.getElementById('avoidWalkToggle').checked = false;
-  const defaultMode = document.querySelector('input[name="searchMode"][value="transfer"]');
+  document.getElementById('irregularThroughToggle').checked = false;
+  const defaultMode = document.querySelector('input[name="searchMode"][value="balanced"]');
   if(defaultMode) defaultMode.checked = true;
   document.getElementById('result').innerHTML = '';
 }
